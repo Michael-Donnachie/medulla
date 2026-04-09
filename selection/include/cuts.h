@@ -16,6 +16,7 @@
 
 #include "utilities.h"
 #include "framework.h"
+#include "selectors.h"
 
 /**
  * @namespace cuts
@@ -205,6 +206,164 @@ namespace cuts
     REGISTER_CUT_SCOPE(RegistrationScope::Both, fiducial_cut_tmp, fiducial_cut_tmp);
     
     /**
+     * @brief Apply a fiducial volume cut on photons based on their first interaction
+     * point (FIP) and kinetic energy threshold.
+     * @details Classifies an interaction as contained or not based on whether
+     * the leading (and sub-leading, if present) photon's first interaction point
+     * lies within the TPC fiducial margin. Only photons with a kinetic energy
+     * at or above 20 MeV are subject to the containment check; photons below
+     * this threshold are treated as contained regardless of their FIP. If no
+     * photons are found in the interaction, the interaction is also treated as
+     * contained.
+     *
+     * The containment check is delegated to @ref pcuts::fip_contained with a
+     * margin parameter of 1.0 cm.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the photons fip is within fiducial volume
+     */
+    template<class T>
+    bool contained_fip_cut(const T & obj){
+        std::vector<double> params={1.0};
+        size_t lead_phot_index = selectors::leading_photon(obj);
+        size_t sub_lead_phot_index = selectors::sub_leading_photon(obj);
+        // want it to be contained whenever there are no photons or the photons are too low of an energy 
+        // not contained whenever the photons with suitable energy have fip within the TPC margin
+
+        if (lead_phot_index == kNoMatch){
+            return true;
+        }
+
+        else if (sub_lead_phot_index == kNoMatch) {
+            auto & lead_phot(obj.particles[lead_phot_index]);
+            if (lead_phot.ke>=20){
+                if (pcuts::fip_contained(lead_phot, params)==1){
+                return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
+        else {
+            auto & lead_phot(obj.particles[lead_phot_index]);
+            auto & sub_lead_phot(obj.particles[sub_lead_phot_index]);
+            if (lead_phot.ke>=20 && sub_lead_phot.ke>=20){
+                if (pcuts::fip_contained(lead_phot,params)==1 && pcuts::fip_contained(sub_lead_phot,params)==1){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else if (lead_phot.ke>=20){
+                if (pcuts::fip_contained(lead_phot,params)==1){
+                return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_fip_cat, contained_fip_cat);
+
+
+    /**
+     * @brief Apply a fiducial volume cut on photons based on their first interaction
+     * point (FIP) and deposit_sum threshold.
+     * @details Classifies an interaction as contained or not based on whether
+     * the leading (and sub-leading, if present) photon's first interaction point
+     * lies within the TPC fiducial margin. Only photons with a deposit_sum
+     * at or above 20 MeV are subject to the containment check; photons below
+     * this threshold are treated as contained regardless of their FIP. If no
+     * photons are found in the interaction, the interaction is also treated as
+     * contained.
+     *
+     * The containment check is delegated to @ref pcuts::fip_contained with a
+     * margin parameter of 1.0 cm.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the photons fip is within fiducial volume
+     */
+    template<class T>
+    bool contained_fip_cat_depot(const T & obj){
+        std::vector<double> params={1.0};
+        size_t lead_phot_index = selectors::leading_depot_photon(obj);
+        size_t sub_lead_phot_index = selectors::sub_leading_depot_photon(obj);
+        // want it to be contained whenever there are no photons or the photons are too low of an energy 
+        // not contained whenever the photons with suitable energy have fip within the TPC margin
+
+        if (lead_phot_index == kNoMatch){
+            return true;
+        }
+
+        else if (sub_lead_phot_index == kNoMatch) {
+            auto & lead_phot(obj.particles[lead_phot_index]);
+            if (lead_phot.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_phot,params)==1){
+                return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
+        else {
+            auto & lead_phot(obj.particles[lead_phot_index]);
+            auto & sub_lead_phot(obj.particles[sub_lead_phot_index]);
+            if (lead_phot.depositions_sum>=20 && sub_lead_phot.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_phot,params)==1 && pcuts::fip_contained(sub_lead_phot,params)==1){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else if (lead_phot.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_phot,params)==1){
+                return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_fip_cat_depot, contained_fip_cat_depot);
+ 
+    /**
+     * @brief Apply a cut to select dirt interactions (vertex outside the TPC).
+     * @details Classifies an interaction as a "dirt" event if its vertex lies
+     * outside the nominal SBND TPC boundaries, as defined by the constants
+     * SBND_XMIN, SBND_XMAX, SBND_YMIN, SBND_YMAX, SBND_ZMIN, and SBND_ZMAX.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the interaction vertex is outside the TPC volume.
+     */
+    template<class T>
+    bool is_dirt(const T & obj) {
+        double distance_tpc = 3;
+        if(obj.vertex[0] < SBND_XMIN || obj.vertex[0] > SBND_XMAX ||obj.vertex[1] < SBND_YMIN || obj.vertex[1] > SBND_YMAX
+                                || obj.vertex[2] < SBND_ZMIN || obj.vertex[2] > SBND_ZMAX )
+            return 1;
+        else 
+            return 0;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::True, is_dirt, is_dirt);
+    /**
      * @brief Apply a containment cut on the entire interaction.
      * @details The containment cut is applied on the entire interaction. The
      * interaction is considered contained if all particles and all spacepoints
@@ -342,6 +501,174 @@ namespace cuts
         return count;
     }
 
+
+    /**
+     * @brief Count particles of a given species above an energy threshold,
+     * regardless of primary classification.
+     * @details Identical to @ref particle_multiplicity, but does not require
+     * particles to be classified as primary.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to inspect.
+     * @param mult the multiplicity ceiling; counting stops above this value.
+     * @param particle_species the SPINE PID index of the species to count.
+     * @param params a single-element vector whose first entry is the minimum
+     * kinetic energy (in MeV) for a particle to be counted.
+     * @return the number of qualifying particles (primary or otherwise),
+     * saturated at @p mult + 1.
+     */
+    template<class T>
+    size_t particle_multiplicity_inclusive(const T & obj, size_t mult, size_t particle_species, std::vector<double> params={})
+    {
+        size_t count(0);
+        for(const auto & p : obj.particles)
+        {
+            if(pvars::pid(p) == particle_species && pvars::ke(p) >= params[0])
+                ++count;
+            if(count > mult)
+                break; // No need to count further.
+        }
+        return count;
+    }  
+    
+    /**
+     * @brief Count particles of a given species above a deposited energy
+     * threshold, regardless of primary classification.
+     * @details Analogous to @ref particle_multiplicity_inclusive, but uses
+     * deposited energy (depositions_sum) rather than kinetic energy (ke) as the
+     * threshold criterion. 
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to inspect.
+     * @param mult the multiplicity ceiling; counting stops above this value.
+     * @param particle_species the SPINE PID index of the species to count.
+     * @param params a single-element vector whose first entry is the minimum
+     * deposited energy (in MeV) for a particle to be counted.
+     * @return the number of qualifying particles, saturated at @p mult + 1.
+     */
+    template<class T>
+    size_t particle_multiplicity_deposited_inclusive(const T & obj, size_t mult, size_t particle_species, std::vector<double> params={})
+    {
+        size_t count(0);
+        for(const auto & p : obj.particles)
+        {
+            if(pvars::pid(p) == particle_species && pvars::total_depositions(p) >= params[0])
+                ++count;
+            if(count > mult)
+                break; // No need to count further.
+        }
+        return count;
+    }
+
+    /**
+     * @brief Apply a cut selecting single-photon-like topology by kinetic energy.
+     * @details Selects interactions consistent with a single observed photon,
+     * including cases where two photons are reconstructed but are nearly
+     * collinear (opening angle < 20°) and thus consistent with
+     * a single forward-going electromagnetic shower. Photon energies are
+     * assessed using kinetic energy (ke).
+     *
+     * Selection logic:
+     *  - Exactly one photon with KE ≥ @p params[0]: passes.
+     *  - Exactly two photons both with KE ≥ 20 MeV and opening angle < 20°:
+     *    passes (treated as a merged/collinear single photon).
+     *  - All other cases: fails.
+     *
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum photon
+     * kinetic energy threshold (in MeV) for the single-photon count. Defaults
+     * to 25 MeV.
+     * @return true if the interaction satisfies the single-photon-like topology.
+     */
+    template<class T>
+    bool single_photon_observed_cut(const T & obj, std::vector<double> params={25,})
+    {
+        size_t lead_phot_index = selectors::leading_photon(obj);
+        size_t sub_lead_phot_index = selectors::sub_leading_photon(obj);
+        double opening_angle;
+        if(lead_phot_index == kNoMatch || sub_lead_phot_index == kNoMatch){
+            opening_angle = kNoMatchValue; 
+            return false;
+        }
+        else
+        {
+            auto & lead_phot(obj.particles[lead_phot_index]);
+            auto & sub_lead_phot(obj.particles[sub_lead_phot_index]);
+            if (lead_phot.ke >=20 && sub_lead_phot.ke>=20){
+                opening_angle =  std::acos(lead_phot.start_dir[0] * sub_lead_phot.start_dir[0] + lead_phot.start_dir[1] * sub_lead_phot.start_dir[1] + lead_phot.start_dir[2] * sub_lead_phot.start_dir[2]);
+            }
+            else{
+                opening_angle =  kNoMatchValue;
+            }
+        }
+    
+        if (particle_multiplicity_inclusive(obj, 1, 0, params) == 1){
+            return true;
+        }
+        else if (particle_multiplicity_inclusive(obj, 2, 0, params) == 2 && opening_angle <0.34906585){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, single_photon_observed_cut, single_photon_observed_cut);
+
+    /**
+     * @brief Apply a cut selecting single-photon-like topology by deposited energy.
+     * @details Selects interactions consistent with a single observed photon,
+     * including cases where two photons are reconstructed but are nearly
+     * collinear (opening angle < 20°) and thus consistent with
+     * a single forward-going electromagnetic shower. Photon energies are
+     * assessed using deposit_sum.
+     * 
+     * Selection logic:
+     *  - Exactly one photon with depositions_sum ≥ @p params[0]: passes.
+     *  - Exactly two photons both with depositions_sum ≥ 20 MeV and opening
+     *    angle < 20°: passes.
+     *  - All other cases: fails.
+     *
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum deposited
+     * energy threshold (in MeV) for the single-photon count. Defaults to 25 MeV.
+     * @return true if the interaction satisfies the single-photon-like topology
+     * under the deposited energy criterion.
+     */
+    template<class T>
+    bool single_photon_deposited_cut(const T & obj, std::vector<double> params={25,})
+    {
+        size_t lead_phot_index = selectors::leading_depot_photon(obj);
+        size_t sub_lead_phot_index = selectors::sub_leading_depot_photon(obj);
+        double opening_angle;
+        if(lead_phot_index == kNoMatch || sub_lead_phot_index == kNoMatch){
+            opening_angle = kNoMatchValue; 
+            return false;
+        }
+        
+        else{
+            auto & lead_phot(obj.particles[lead_phot_index]);
+            auto & sub_lead_phot(obj.particles[sub_lead_phot_index]);
+            if (lead_phot.depositions_sum >=20 && sub_lead_phot.depositions_sum>=20){
+                opening_angle =  std::acos(lead_phot.start_dir[0] * sub_lead_phot.start_dir[0] + lead_phot.start_dir[1] * sub_lead_phot.start_dir[1] + lead_phot.start_dir[2] * sub_lead_phot.start_dir[2]);
+            }
+            else{
+                opening_angle =  kNoMatchValue;
+            }
+        }
+    
+        if (particle_multiplicity_deposited_inclusive(obj, 1, 0, params) == 1){
+            return true;
+        }
+        else if (particle_multiplicity_deposited_inclusive(obj, 2, 0, params) == 2 && opening_angle <0.34906585){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, single_photon_deposited_cut, single_photon_deposited_cut);
+
+
     /**
      * @brief Binding for a single particle photon multiplicity cut.
      * @details This function binds the single particle multiplicity cut for
@@ -474,6 +801,92 @@ namespace cuts
     }
 
     REGISTER_CUT_SCOPE(RegistrationScope::Both, no_electrons, no_electrons);
+
+    /**
+     * @brief Apply a cut requiring zero electrons above threshold, regardless of
+     * primary classification.
+     * @details Selects interactions that contain no electrons (primary or
+     * otherwise) with kinetic energy at or above @p params[0]. This is the
+     * inclusive variant of @ref no_electrons, useful when the primary
+     * classification is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum electron
+     * kinetic energy (in MeV) that would cause a veto. Defaults to 25.0 MeV.
+     * @return true if the interaction has no electrons above threshold.
+     */
+    template<class T>
+    bool no_electrons_inclusive(const T & obj, std::vector<double> params={25.0,})
+    {
+        return particle_multiplicity_inclusive(obj, 0, 1, params) == 0;
+    }
+
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, no_electrons_inclusive, no_electrons_inclusive);
+
+    /**
+     * @brief Apply a cut requiring zero muons above threshold, regardless of
+     * primary classification.
+     * @details Selects interactions that contain no muons (primary or otherwise)
+     * with kinetic energy at or above @p params[0]. This is the inclusive
+     * variant of @ref no_muons, useful when primary classification is not
+     * enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum muon
+     * kinetic energy (in MeV) that would cause a veto. Defaults to 25.0 MeV.
+     * @return true if the interaction has no muons above threshold.
+     */
+    template<class T>
+    bool no_muon_inclusive(const T & obj, std::vector<double> params={25.0,})
+    {
+        return particle_multiplicity_inclusive(obj, 0, 2, params) == 0;
+    }
+
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, no_muon_inclusive, no_muon_inclusive);
+
+    /**
+     * @brief Apply a cut requiring zero charged pions above threshold, regardless
+     * of primary classification.
+     * @details Selects interactions that contain no charged pions (primary or
+     * otherwise) with kinetic energy at or above @p params[0]. This is the
+     * inclusive variant of @ref no_charged_pions, useful when primary
+     * classification is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum pion
+     * kinetic energy (in MeV) that would cause a veto. Defaults to 25.0 MeV.
+     * @return true if the interaction has no charged pions above threshold.
+     */
+    template<class T>
+    bool no_charged_pions_inclusive(const T & obj, std::vector<double> params={25.0,})
+    {
+        return particle_multiplicity_inclusive(obj, 0, 3, params) == 0;
+    }
+
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, no_charged_pions_inclusive, no_charged_pions_inclusive);
+
+
+    /**
+     * @brief Apply a cut requiring zero protons above threshold, regardless of
+     * primary classification.
+     * @details Selects interactions that contain no protons (primary or
+     * otherwise) with kinetic energy at or above @p params[0]. This is the
+     * inclusive variant of @ref no_protons, useful when primary classification
+     * is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum proton
+     * kinetic energy (in MeV) that would cause a veto. Defaults to 25.0 MeV.
+     * @return true if the interaction has no protons above threshold.
+     */
+    template<class T>
+    bool no_proton_inclusive(const T & obj, std::vector<double> params={25.0,})
+    {
+        return particle_multiplicity_inclusive(obj, 0, 4, params) == 0;
+    }
+
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, no_proton_inclusive, no_proton_inclusive);
+
     /**
      * @brief Binding for zero particle muon multiplicity cut (negation of
      * nonzero_particle_multiplicity).

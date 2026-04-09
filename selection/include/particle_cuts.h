@@ -47,6 +47,56 @@ namespace pcuts
         return pvars::primary_classification(p) == 1;
     }
     REGISTER_CUT_SCOPE(RegistrationScope::BothParticle, is_primary, is_primary);
+    
+    /**
+     * @brief Check if the particle is a secondary particle.
+     * @details A particle is classified as secondary if its SPINE softmax
+     * primary/secondary score does not meet the upstream threshold for primary
+     * classification. Secondary particles are produced in re-interactions or
+     * decays downstream of the neutrino interaction vertex, rather than
+     * originating at the vertex itself. This is the logical complement of
+     * @ref is_primary.
+     * @tparam T the type of particle (true or reco).
+     * @param p the particle to check.
+     * @return true if the particle is not classified as primary.
+     * @note The primary classification variable is a softmax score; any value
+     * other than 1 is treated as secondary.
+     */
+    template<class T>
+    bool is_secondary(const T & p)
+    {
+        return pvars::primary_classification(p) != 1;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::BothParticle, is_secondary, is_secondary);
+
+    /**
+     * @brief Check if the particle's start point (first interaction point) is
+     * contained within the TPC volume by a given margin.
+     * @details Returns true if the particle's start point lies strictly inside
+     * the SBND TPC active volume, inset by a configurable margin on all six
+     * faces.
+     *
+     * This cut is used to assess the containment of photons and other shower
+     * particles based solely on their first interaction point, which is
+     * meaningful for particles that may deposit energy across a large volume
+     * (e.g. photons converting far from the vertex).
+     *
+     * @tparam T the type of particle (true or reco).
+     * @param p the particle to check.
+     * @param params a single-element vector whose entry is the inset margin
+     * (in cm) applied to all TPC faces. Defaults to 3.0 cm.
+     * @return true if the particle's start point is within the TPC volume by
+     * at least the specified margin on all sides.
+     */
+    template<class T>
+    bool fip_contained(const T & p, std::vector<double> params={3.0}) {
+        if(p.start_point[0] > SBND_XMIN + params[0] && p.start_point[0] < SBND_XMAX-params[0] && p.start_point[1] > SBND_YMIN+params[0] && p.start_point[1] < SBND_YMAX-params[0]
+                                && p.start_point[2] > SBND_ZMIN + params[0] && p.start_point[2] < SBND_ZMAX - params[0])
+            return true;
+        else 
+            return false;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::BothParticle, fip_contained, fip_contained); 
 
     /**
      * @brief Check if the particle is contained.

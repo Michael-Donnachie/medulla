@@ -91,6 +91,171 @@ namespace pvars
     REGISTER_VAR_SCOPE(RegistrationScope::BothParticle, semantic_type, semantic_type);
 
     /**
+     * @brief Variable for whether the particle has been matched to its
+     * truth/reco counterpart.
+     * @details Returns 1 if the particle has been successfully matched to a
+     * corresponding reconstructed (for true particles) or true (for reco
+     * particles) particle by the SPINE matching algorithm, and 0 otherwise.
+     * @tparam T the type of particle (true or reco).
+     * @param p the particle to apply the variable on.
+     * @return 1 if the particle is matched, 0 otherwise.
+     */
+    template<class T>
+    double is_matched_particle(const T & p)
+    {
+        return p.is_matched;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::BothParticle, is_matched_particle, is_matched_particle);
+
+    /**
+     * @brief Variable for the dense integer ID of the particle within its
+     * parent event.
+     * @details Returns the particle's event-local integer identifier, which
+     * is assigned as a dense enumeration starting from 0 within each event.
+     * @tparam T the type of particle (true or reco).
+     * @param p the particle to apply the variable on.
+     * @return the integer ID of the particle within the event.
+     */
+    template<class T>
+    double particle_id(const T & p)
+    {
+        return p.id;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::BothParticle, particle_id, particle_id);
+
+
+    /**
+     * @brief Variable for the total energy deposited by the
+     * particle, excluding ghost hits.
+     * @details Returns the sum of energy depositions across all spacepoints
+     * belonging to the particle, after ghost point removal. Ghost points are
+     * artefacts of the 3D reconstruction that do not correspond to real energy
+     * depositions. This quantity (depositions_sum) is the primary
+     * reco-level energy observable for shower-like particles and is used in
+     * deposited-energy-based selections as an alternative to kinetic energy.
+     * @tparam T the type of particle (true or reco).
+     * @param p the particle to apply the variable on.
+     * @return the total non-ghost energy deposition of the particle in MeV.
+     */
+    template<class T>
+    double total_depositions(const T & p )
+    {
+        return p.depositions_sum;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::BothParticle, total_depositions, total_depositions);
+
+    /**
+     * @brief Variable for the total true energy deposited by the particle
+     * as recorded by Geant4.
+     * @details Returns the sum of true energy depositions from the Geant4
+     * simulation (depositions_g4_sum) across all spacepoints belonging to
+     * the particle. 
+     * @tparam T the type of particle (true only)
+     * @param p the particle to apply the variable on.
+     * @return the total Geant4 energy deposition of the particle in MeV.
+     * @note This variable is only registered and valid for true particles.
+     */
+    template<class T>
+    double total_g4_depostions(const T & p )
+    {
+        return p.depositions_g4_sum;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::TrueParticle, total_g4_depostions, total_g4_depostions); 
+
+    /**
+     * @brief Variable for the total true energy deposited by the particle
+     * along its trajectory, as stored in the CAF truth record.
+     * @details Returns the energy_deposit field from the true particle record,
+     * 
+     * @tparam T the type of particle (true only).
+     * @param p the particle to apply the variable on.
+     * @return the total trajectory energy deposit of the particle in MeV.
+     * @note This variable is only registered and valid for true particles.
+     */
+    template<class T>
+    double energy_deposition(const T & p )
+    {
+        return p.energy_deposit;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::TrueParticle, energy_deposition, energy_deposition);
+
+    /**
+     * @brief Variable for the number of reconstructed fragments belonging to
+     * the particle.
+     * @details A particle in SPINE may be composed of multiple disconnected
+     * fragments — contiguous clusters of spacepoints that are grouped together
+     * into a single particle object. This variable returns the number of such
+     * fragments (num_fragments).
+     * @tparam T the type of particle (true or reco).
+     * @param p the particle to apply the variable on.
+     * @return the number of fragments comprising the particle.
+     */
+    template<class T>
+    double number_fragments(const T & p )
+    {
+        return p.num_fragments;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::BothParticle, number_fragments, number_fragments);
+
+    /**
+     * @brief Variable for the ID of the first fragment belonging to the
+     * particle.
+     * @details Returns the identifier of the first entry in the particle's
+     * fragment_ids list. Fragment IDs refer to the individual contiguous
+     * spacepoint clusters that have been merged to form the particle object.
+     * @tparam T the type of particle (true or reco).
+     * @param p the particle to apply the variable on.
+     * @return the ID of the first fragment of the particle.
+     * @note Accessing this variable is only safe if the particle has at least
+     * one fragment (i.e. num_fragments > 0).
+     */
+    template<class T>
+    double first_fragment(const T & p )
+    {
+        return p.fragment_ids[0];
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::BothParticle, first_fragment, first_fragment);
+
+    /**
+     * @brief Variable for the number of voxels belonging to the true particle.
+     * @details Returns the number of voxels (3D image cells) associated with
+     * the true particle in the Geant4 simulation. This is the truth-level
+     * analogue of the reconstructed particle size and can be used to assess
+     * how well the reconstructed spacepoint count (p.size) agrees with the
+     * true extent of the particle, or to define truth-level size thresholds
+     * for efficiency studies.
+     * @tparam T the type of particle (true only).
+     * @param p the particle to apply the variable on.
+     * @return the number of true voxels belonging to the particle.
+     * @note This variable is only registered and valid for true particles.
+     */
+    template<class T>
+    double number_voxels(const T & p)
+    {
+        return p.num_voxels;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::TrueParticle, number_voxels, number_voxels);
+
+    /**
+     * @brief Variable for the size of the particle, defined as the number of
+     * spacepoints.
+     * @details Returns the number of reconstructed spacepoints belonging to
+     * the particle (p.size). This is the primary reco-level measure of
+     * particle extent and is used as a proxy for track length or shower size
+     * in size-based selection cuts (see @ref pcuts::size_cut).
+     * @tparam T the type of particle (true or reco).
+     * @param p the particle to apply the variable on.
+     * @return the number of spacepoints in the particle.
+     */
+    template<class T>
+    double part_size(const T & p)
+    {
+        return p.size;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::BothParticle, part_size, part_size);
+
+
+    /**
      * @brief Variable for the best-match IoU of the particle.
      * @details The best-match IoU is the intersection over union of the
      * points belonging to a pair of reconstructed and true particles. The

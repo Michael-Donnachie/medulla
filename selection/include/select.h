@@ -71,7 +71,7 @@ namespace selectors
      * @param pid the SPINE PID index of the particle type to select.
      * @return the index of the particle of the specified type with the
      * highest deposited energy, or kNoMatch if none is found.
-     */    
+     */
     template <class T>
     size_t leading_depot_index(const T & obj, uint16_t pid)
     {
@@ -96,6 +96,9 @@ namespace selectors
      * @details The sub-leading particle is defined as the particle with the
      * second-highest kinetic energy among all particles of the specified PID
      * in the interaction. The kinetic energy is calculated via @ref pvars::ke.
+     * The search is performed in a single pass by maintaining running estimates
+     * of both the leading and sub-leading energies and their corresponding
+     * indices simultaneously.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
      * @param pid the SPINE PID index of the particle type to select.
@@ -140,7 +143,9 @@ namespace selectors
      * uses @ref pvars::total_depositions (the sum of non-ghost spacepoint
      * depositions) as the energy metric rather than kinetic energy. This
      * variant is preferred in reco-level selections where deposited energy is
-     * the primary observable.
+     * the primary observable. The search is performed in a single pass
+     * maintaining running estimates of the leading and sub-leading deposited
+     * energies and their corresponding indices simultaneously.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
      * @param pid the SPINE PID index of the particle type to select.
@@ -275,14 +280,15 @@ namespace selectors
         return index;
     }
     REGISTER_SELECTOR(second_longest_track, second_longest_track);
-    
+
     /**
      * @brief Finds the index corresponding to the sub-leading photon, ranked
      * by deposited energy.
      * @details Returns the index of the photon with the second-highest
      * deposited energy (depositions_sum) in the interaction, via
      * @ref sub_leading_depot_index. This is the deposited-energy analogue of
-     * @ref sub_leading_photon.
+     * @ref sub_leading_photon and is preferred in reco-level selections where
+     * deposited energy is more reliable than kinetic energy.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
      * @return the index of the sub-leading photon by deposited energy, or
@@ -301,7 +307,8 @@ namespace selectors
      * @details Returns the index of the photon with the highest deposited
      * energy (depositions_sum) in the interaction, via
      * @ref leading_depot_index. This is the deposited-energy analogue of
-     * @ref leading_photon.
+     * @ref leading_photon and is preferred in reco-level selections where
+     * deposited energy is more reliable than kinetic energy.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
      * @return the index of the leading photon by deposited energy, or
@@ -318,7 +325,9 @@ namespace selectors
      * @brief Finds the index corresponding to the sub-leading photon, ranked
      * by kinetic energy.
      * @details Returns the index of the photon with the second-highest kinetic
-     * energy in the interaction, via @ref sub_leading_particle_index.
+     * energy in the interaction, via @ref sub_leading_particle_index. Useful
+     * for pi0 -> gamma gamma selections where both photons must be individually
+     * identified and ranked.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
      * @return the index of the sub-leading photon by kinetic energy, or
