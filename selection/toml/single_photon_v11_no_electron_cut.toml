@@ -11,7 +11,7 @@ proton_threshold = 25.0
 proton_low = 25.0
 
 [general]
-output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/selection/single_photon_v1"
+output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/selection/single_photon_v2_removed_ecut"
 primfn = "default_primary_classification"
 pidfn = "default_pid"
 fsthresh = [
@@ -116,7 +116,6 @@ sim_only = false
 mode = "reco"
 cut = [
     { name = "single_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
-    { name = "no_electrons_inclusive",                       type = "reco",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]}
 ]
@@ -139,7 +138,6 @@ sim_only = false
 mode = "reco"
 cut = [
     { name = "single_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
-    { name = "no_electrons_inclusive",                       type = "reco",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]},
     { name = "contained_fip_cut_depot",                    type = "reco"},
@@ -165,7 +163,6 @@ sim_only = false
 mode = "reco"
 cut = [
     { name = "single_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
-    { name = "no_electrons_inclusive",                       type = "reco",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]},
     { name = "contained_fip_cut_depot",                    type = "reco"},

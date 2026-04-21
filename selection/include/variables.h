@@ -712,82 +712,35 @@ namespace vars
     double pn_lp(const T & obj) { return std::sqrt(std::pow(vars::dpT_lp(obj), 2) + std::pow(vars::dpL_lp(obj), 2)); }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, pn_lp, pn_lp);
 
+   
     /**
-     * @brief Variable for the opening angle between leading muon and proton.
-     * @details The leading muon and proton are defined as the particles with the
-     * highest kinetic energy. The opening angle is defined as the arccosine of
-     * the dot product of the momentum vectors of the leading muon and proton.
+     * @brief Variable for the opening angle between the leading and sub-leading
+     * photons.
+     * @details Calculates the angle between the start directions of the leading
+     * and sub-leading photons (ranked by deposition sum) as the arccosine of
+     * their direction vector dot product. The opening angle is only computed if
+     * both photons have a deposition sum at or above 20 MeV; otherwise
+     * kNoMatchValue is returned. This variable is used in the collinear 
+     * two-photon topology cut in @ref cuts::single_photon_observed_cut.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to apply the variable on.
-     * @return the opening angle between the leading muon and
-     * proton.
-     */
-    template<class T>
-    double opening_angle(const T & obj)
-    {
-        size_t mi = selectors::leading_muon(obj);
-        size_t pi = selectors::leading_proton(obj);
-        if(mi == kNoMatch || pi == kNoMatch)
-            return kNoMatchValue; // No leading muon or proton found.
-        else
-        {
-            auto & m(obj.particles[mi]);
-            auto & p(obj.particles[pi]);
-            return std::acos(m.start_dir[0] * p.start_dir[0] + m.start_dir[1] * p.start_dir[1] + m.start_dir[2] * p.start_dir[2]);
-        }
-    }
-    REGISTER_VAR_SCOPE(RegistrationScope::Both, opening_angle, opening_angle);
-
-    /**
-     * @breif MYOWN photon containment for fip of leading+sub leading
-     */
-    template<class T>
-    double photon_fip_contained(const T & obj)
-    {
-        size_t lead_phot_index = selectors::leading_photon(obj);
-        size_t sec_lead_phot_index = selectors::sub_leading_photon(obj);
-        
-        if(lead_phot_index == kNoMatch){
-            if (sec_lead_phot_index == kNoMatch){
-                return 0;
-            }
-            else{
-                auto & lead_phot(obj.particles[lead_phot_index]);
-                return pcuts::fip_contained(lead_phot);
-            }
-        }
-        else
-        {
-            auto & lead_phot(obj.particles[lead_phot_index]);
-            auto & sec_lead_phot(obj.particles[sec_lead_phot_index]);
-            if (pcuts::fip_contained(lead_phot) == 1 && pcuts::fip_contained(sec_lead_phot) == 1){
-                return 1;
-            }
-            else{
-                return 0;
-            }
-        }
-        
-    }
-    REGISTER_VAR_SCOPE(RegistrationScope::Both, photon_fip_contained, photon_fip_contained);
-
-    /**
-     * @brief MYOWN Variable for the opening angle between leading photon and sub leading photon.
+     * @return the opening angle between the two photons in radians, or
+     * kNoMatchValue if either photon is missing or below the 20 MeV threshold.
      */
     template<class T>
     double photon_opening_angle(const T & obj)
     {
-        size_t lead_phot_index = selectors::leading_photon(obj);
-        size_t sec_lead_phot_index = selectors::sub_leading_photon(obj);
+        size_t lead_phot_index = selectors::leading_depot_photon(obj);
+        size_t sub_lead_phot_index = selectors::sub_leading_depot_photon(obj);
         
-        if(lead_phot_index == kNoMatch || sec_lead_phot_index == kNoMatch)  
+        if(lead_phot_index == kNoMatch || sub_lead_phot_index == kNoMatch)  
             return kNoMatchValue; 
         else
         {
             auto & lead_phot(obj.particles[lead_phot_index]);
-            auto & sec_lead_phot(obj.particles[sec_lead_phot_index]);
-            if (lead_phot.ke >=20 && sec_lead_phot.ke>=20){
-                return std::acos(lead_phot.start_dir[0] * sec_lead_phot.start_dir[0] + lead_phot.start_dir[1] * sec_lead_phot.start_dir[1] + lead_phot.start_dir[2] * sec_lead_phot.start_dir[2]);
+            auto & sub_lead_phot(obj.particles[sub_lead_phot_index]);
+            if (lead_phot.depositions_sum >=20 && sub_lead_phot.depositions_sum>=20){
+                return std::acos(lead_phot.start_dir[0] * sub_lead_phot.start_dir[0] + lead_phot.start_dir[1] * sub_lead_phot.start_dir[1] + lead_phot.start_dir[2] * sub_lead_phot.start_dir[2]);
             }
             else{
                 return kNoMatchValue;
@@ -796,18 +749,62 @@ namespace vars
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, photon_opening_angle, photon_opening_angle);
 
+
     /**
-     * @brief MYOWN Variable for the distance between the leading and sub-leading photon start points.
+     * @brief Variable for the opening angle between the leading and sub-leading
+     * shower.
+     * @details Calculates the angle between the start directions of the leading
+     * and sub-leading showers (ranked by deposition sum) as the arccosine of
+     * their direction vector dot product. The opening angle is only computed if
+     * both showers have a deposition sum at or above 20 MeV; otherwise
+     * kNoMatchValue is returned. 
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to apply the variable on.
-     * @return the distance from the leading and subleading photon start points
+     * @return the opening angle between the two showers in radians, or
+     * kNoMatchValue if either shower is missing or below the 20 MeV threshold.
+     */
+    template<class T>
+    double shower_opening_angle(const T & obj)
+    {
+        size_t lead_shower_index = selectors::leading_depot_shower(obj);
+        size_t sub_lead_shower_index = selectors::sub_leading_depot_shower(obj);
+        
+        if(lead_shower_index == kNoMatch || sub_lead_shower_index == kNoMatch)  
+            return kNoMatchValue; 
+        else
+        {
+            auto & lead_shower(obj.particles[lead_shower_index]);
+            auto & sub_lead_shower(obj.particles[sub_lead_shower_index]);
+            if (lead_shower.depositions_sum >=20 && sub_lead_shower.depositions_sum>=20){
+                return std::acos(lead_shower.start_dir[0] * sub_lead_shower.start_dir[0] + lead_shower.start_dir[1] * sub_lead_shower.start_dir[1] + lead_shower.start_dir[2] * sub_lead_shower.start_dir[2]);
+            }
+            else{
+                return kNoMatchValue;
+            }
+        }
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, shower_opening_angle, shower_opening_angle);
+
+    /**
+     * @brief Variable for the 3D distance between the start points of the
+     * leading and sub-leading photons.
+     * @details Calculates the Euclidean distance between the start points
+     * (first interaction points) of the leading and sub-leading photons,
+     * ranked by deposition sum. A large separation can indicate two distinct
+     * photon conversion vertices, which is expected for well-separated
+     * pi0 -> gamma gamma decays. Returns PLACEHOLDERVALUE if either photon
+     * is not found.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @return the distance between the two photon start points in cm, or
+     * PLACEHOLDERVALUE if fewer than two photons are found.
      */
     template<class T>
     double two_photon_seperation(const T & obj)
     {
         // Find the leading and sub-leading photon in the interaction.
-        size_t lead_phot_index = selectors::leading_photon(obj);
-        size_t sub_lead_phot_index = selectors::sub_leading_photon(obj);
+        size_t lead_phot_index = selectors::leading_depot_photon(obj);
+        size_t sub_lead_phot_index = selectors::sub_leading_depot_photon(obj);
         if(lead_phot_index == kNoMatch || sub_lead_phot_index==kNoMatch) return PLACEHOLDERVALUE;
         auto & lead_phot(obj.particles[lead_phot_index]);
         auto & sub_lead_phot(obj.particles[sub_lead_phot_index]);
@@ -818,7 +815,6 @@ namespace vars
         return utilities::magnitude(utilities::subtract(phot_start, sub_phot_start));
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, two_photon_seperation, two_photon_seperation);
-
 
     /**
      * @brief Variable for the (primary) photon multiplicity of the
@@ -848,25 +844,49 @@ namespace vars
         return count;
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, photon_multiplicity, photon_multiplicity);
-   /**
-     * @brief MYOWN Variable for the photon multiplicity of the
-     * interaction - does not care about primary.
+
+    /**
+     * @brief Variable for the inclusive photon multiplicity of the interaction,
+     * thresholded by deposited energy rather than kinetic energy.
+     * @details Counts all photons in the interaction (primary or otherwise)
+     * whose deposited energy (depositions_sum) is at or above @p params[0].
+     * This is the deposited-energy analogue of @ref photon_multiplicity_inclusive
+     * and is preferred in reco-level selections where deposited energy is the
+     * primary observable and kinetic energy may be unreliable.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum deposited
+     * energy threshold (in MeV). Defaults to 20.0 MeV.
+     * @return the number of photons with deposited energy above threshold,
+     * regardless of primary classification.
      */
     template<class T>
-    double photon_depot_multiplicity_inclusive(const T & obj, std::vector<double> params={25.0,})
+    double photon_depot_multiplicity_inclusive(const T & obj, std::vector<double> params={20.0,})
     {
         size_t count(0);
         for(const auto & p : obj.particles)
         {
-            if(pvars::pid(p) == pvars::kPhoton&& pvars::total_depositions(p) >= params[0])
+            if(pvars::pid(p) == pvars::kPhoton && pvars::total_depositions(p) >= params[0])
                 ++count;
         }
         return count;
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, photon_depot_multiplicity_inclusive, photon_depot_multiplicity_inclusive);
-   /**
-     * @brief MYOWN Variable for the photon multiplicity of the
-     * interaction.
+    
+    /**
+     * @brief Variable for the inclusive photon multiplicity of the interaction,
+     * thresholded by kinetic energy, regardless of primary classification.
+     * @details Counts all photons in the interaction (primary or otherwise)
+     * with kinetic energy at or above @p params[0]. This is the inclusive
+     * variant of @ref photon_multiplicity and is useful when the primary
+     * classification is not enforced, for example when studying reconstruction
+     * efficiency or backgrounds from secondary photons.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of photons above the kinetic energy threshold,
+     * regardless of primary classification.
      */
     template<class T>
     double photon_multiplicity_inclusive(const T & obj, std::vector<double> params={25.0,})
@@ -880,7 +900,6 @@ namespace vars
         return count;
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, photon_multiplicity_inclusive, photon_multiplicity_inclusive);
-
 
     /**
      * @brief Variable for the (primary) electron multiplicity of the
@@ -909,9 +928,20 @@ namespace vars
         return count;
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, electron_multiplicity, electron_multiplicity);
+    
     /**
-     * @brief MYOWN Variable for the electron multiplicity of the
-     * interaction.
+     * @brief Variable for the inclusive electron multiplicity of the
+     * interaction, regardless of primary classification.
+     * @details Counts all electrons in the interaction (primary or otherwise)
+     * with kinetic energy at or above @p params[0]. This is the inclusive
+     * variant of @ref electron_multiplicity and is useful when the primary
+     * classification is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of electrons above the kinetic energy threshold,
+     * regardless of primary classification.
      */
     template<class T>
     double electron_multiplicity_inclusive(const T & obj, std::vector<double> params={25.0,})
@@ -925,9 +955,20 @@ namespace vars
         return count;
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, electron_multiplicity_inclusive, electron_multiplicity_inclusive);
+    
     /**
-     * @brief MYOWN Variable for the muon multiplicity of the
-     * interaction.
+     * @brief Variable for the inclusive muon multiplicity of the interaction,
+     * regardless of primary classification.
+     * @details Counts all muons in the interaction (primary or otherwise) with
+     * kinetic energy at or above @p params[0]. This is the inclusive variant
+     * of @ref muon_multiplicity and is useful when the primary classification
+     * is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of muons above the kinetic energy threshold,
+     * regardless of primary classification.
      */
     template<class T>
     double muon_multiplicity_inclusive(const T & obj, std::vector<double> params={25.0,})
@@ -942,11 +983,20 @@ namespace vars
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, muon_multiplicity_inclusive, muon_multiplicity_inclusive);
 
-
     /**
-     * @brief MYOWN Variable for the pion multiplicity of the
-     * interaction.
-     */
+     * @brief Variable for the inclusive charged pion multiplicity of the
+     * interaction, regardless of primary classification.
+     * @details Counts all charged pions in the interaction (primary or
+     * otherwise) with kinetic energy at or above @p params[0]. This is the
+     * inclusive variant of @ref pion_multiplicity and is useful when the
+     * primary classification is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of charged pions above the kinetic energy threshold,
+     * regardless of primary classification.
+     */    
     template<class T>
     double pion_multiplicity_inclusive(const T & obj, std::vector<double> params={25.0,})
     {
@@ -960,11 +1010,19 @@ namespace vars
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, pion_multiplicity_inclusive, pion_multiplicity_inclusive);
 
-
-
     /**
-     * @brief MYOWN Variable for the proton multiplicity of the
-     * interaction.
+     * @brief Variable for the inclusive proton multiplicity of the interaction,
+     * regardless of primary classification.
+     * @details Counts all protons in the interaction (primary or otherwise)
+     * with kinetic energy at or above @p params[0]. This is the inclusive
+     * variant of @ref proton_multiplicity and is useful when the primary
+     * classification is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of protons above the kinetic energy threshold,
+     * regardless of primary classification.
      */
     template<class T>
     double proton_multiplicity_inclusive(const T & obj, std::vector<double> params={25.0,})
@@ -979,25 +1037,6 @@ namespace vars
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, proton_multiplicity_inclusive, proton_multiplicity_inclusive);
 
-    /**
-     * @brief Variable for the (primary) electron multiplicity of the
-     * interaction.
-     * @details This function calculates the multiplicity of primary electrons
-     * in the interaction by counting the number of primary particles that are
-     * identified as electrons and have a kinetic energy above a threshold. The
-     * threshold is set by the `params` vector, which defaults to 25 MeV. The
-     * function returns the number of primary electrons in the interaction.
-     * @tparam T the type of interaction (true or reco).
-     * @param obj the interaction to apply the variable on.
-     * @param params the parameters for the cut. In this case, this sets the
-     * kinetic energy threshold for an electron to count towards the
-     * multiplicity. Defaults to 25 MeV.
-     * @return the multiplicity of primary electrons in the interaction.
-     */
-
-    /**
-     * @brief MYOWN Variable for the muon multiplicity of the
-     * interaction.
     /**
      * @brief Variable for the non-primary shower multiplicity of the
      * interaction.

@@ -75,15 +75,15 @@ namespace selectors
     template <class T>
     size_t leading_depot_index(const T & obj, uint16_t pid)
     {
-        double leading_ke(0);
+        double leading_depot(0);
         size_t index(kNoMatch);
         for(size_t i(0); i < obj.particles.size(); ++i)
         {
             const auto & p = obj.particles[i];
             double energy(pvars::total_depositions(p));
-            if(pvars::pid(p) == pid && energy > leading_ke)
+            if(pvars::pid(p) == pid && energy > leading_depot)
             {
-                leading_ke = energy;
+                leading_depot = energy;
                 index = i;
             }
         }
@@ -115,7 +115,7 @@ namespace selectors
             double energy(pvars::ke(p));
             if(pvars::pid(p) == pid && energy > sub_leading_ke)
             {
-                if(pvars::pid(p) == pid && energy > leading_ke)
+                if(energy > leading_ke)
                 {
                     sub_leading_ke = leading_ke;
                     index_s = index_l;
@@ -151,26 +151,26 @@ namespace selectors
     template <class T>
     size_t sub_leading_depot_index(const T & obj, uint16_t pid)
     {
-        double sub_leading_ke(0);
-        double leading_ke(0);
+        double sub_leading_depot(0);
+        double leading_depot(0);
         size_t index_l(kNoMatch);
         size_t index_s(kNoMatch);
         for(size_t i(0); i < obj.particles.size(); ++i)
         {
             const auto & p = obj.particles[i];
             double energy(pvars::total_depositions(p));
-            if(pvars::pid(p) == pid && energy > sub_leading_ke)
+            if(pvars::pid(p) == pid && energy > sub_leading_depot)
             {
-                if(pvars::pid(p) == pid && energy > leading_ke)
+                if(energy > leading_depot)
                 {
-                    sub_leading_ke = leading_ke;
+                    sub_leading_depot = leading_depot;
                     index_s = index_l;
 
-                    leading_ke = energy;
+                    leading_depot = energy;
                     index_l = i;
                 }
                 else{
-                    sub_leading_ke = energy;
+                    sub_leading_depot = energy;
                     index_s = i;
                 }
                 
@@ -294,6 +294,129 @@ namespace selectors
         return sub_leading_depot_index(obj, pvars::kPhoton);
     }
     REGISTER_SELECTOR(sub_leading_depot_photon, sub_leading_depot_photon);
+
+    /**
+     * @brief Finds the index corresponding to the leading and sub-leading shower, 
+     * ranked by deposited energy.
+     * @details Returns the index of the shower with the highest and second-highest
+     * deposited energy (depositions_sum) in the interaction
+     * @note created for single shower selection
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the leading and sub-leading shower by deposited energy, or
+     * kNoMatch if showers are not found.
+     */
+    template<class T>
+    std::tuple<size_t, size_t> lead_and_sub_shower_index_depot(const T & obj)
+    {
+        double sub_photon_depot(0);
+        double leading_photon_depot(0);
+        double sub_electron_depot(0);
+        double leading_electron_depot(0);
+
+        size_t index_lead_photon(kNoMatch);
+        size_t index_sub_photon(kNoMatch);
+        size_t index_lead_electron(kNoMatch);
+        size_t index_sub_electron(kNoMatch);
+        for(size_t i(0); i < obj.particles.size(); ++i)
+        {
+            const auto & p = obj.particles[i];
+            double energy(pvars::total_depositions(p));
+            if(pvars::pid(p) == pvars::kPhoton && energy > sub_photon_depot)
+            {
+                if(energy > leading_photon_depot)
+                {
+                    sub_photon_depot = leading_photon_depot;
+                    index_sub_photon = index_lead_photon;
+
+                    leading_photon_depot = energy;
+                    index_lead_photon = i;
+                }
+                else{
+                    sub_photon_depot = energy;
+                    index_sub_photon = i;
+                }
+                
+            }
+
+            else if(pvars::pid(p) == pvars::kElectron && energy > sub_electron_depot){
+                if(energy > leading_electron_depot)
+                {
+                    sub_electron_depot = leading_electron_depot;
+                    index_sub_electron = index_lead_electron;
+
+                    leading_electron_depot = energy;
+                    index_lead_electron = i;
+                }
+                else{
+                    sub_electron_depot = energy;
+                    index_sub_electron = i;
+                }
+                
+            }
+        }
+
+        size_t index_lead(kNoMatch);
+        size_t index_sub(kNoMatch);
+        if (leading_photon_depot>leading_electron_depot){
+            index_lead = index_lead_photon;
+            if (sub_photon_depot>leading_electron_depot){
+                index_sub = index_sub_photon;
+            }
+            else{
+                index_sub = index_lead_electron;
+            }
+        }
+        else{
+            index_lead = index_lead_electron;
+            if (sub_electron_depot>leading_photon_depot){
+                index_sub = index_sub_electron;
+            }
+            else{
+                index_sub = index_lead_photon;
+            }
+        }
+        
+        return {index_lead, index_sub};
+    }
+
+    /**
+     * @brief Finds the index corresponding to the leading shower, ranked by
+     * deposited energy.
+     * @details Returns the index of the shower with the highest deposited
+     * energy (depositions_sum) in the interaction, via
+     * @ref lead_and_sublead_shower_index_depot. 
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the leading shower by deposited energy, or
+     * kNoMatch if no showers are found.
+     */
+    template<class T>
+    size_t leading_depot_shower(const T & obj)
+    {
+        auto [index_lead, index_sub] = lead_and_sub_shower_index_depot(obj);
+        return index_lead;
+    }
+    REGISTER_SELECTOR(leading_depot_shower, leading_depot_shower);
+
+    /**
+     * @brief Finds the index corresponding to the sub-leading shower, ranked by
+     * deposited energy.
+     * @details Returns the index of the shower with the second highest deposited
+     * energy (depositions_sum) in the interaction, via
+     * @ref lead_and_sublead_shower_index_depot. 
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the sub-leading shower by deposited energy, or
+     * kNoMatch if no showers are found.
+     */
+    template<class T>
+    size_t sub_leading_depot_shower(const T & obj)
+    {
+        auto [index_lead, index_sub] = lead_and_sub_shower_index_depot(obj);
+        return index_sub;
+    }
+    REGISTER_SELECTOR(sub_leading_depot_shower, sub_leading_depot_shower);
 
     /**
      * @brief Finds the index corresponding to the leading photon, ranked by

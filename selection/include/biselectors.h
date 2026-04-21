@@ -72,5 +72,23 @@ namespace biselectors
         return { selectors::leading_muon(obj), selectors::leading_pion(obj) };
     }
     REGISTER_BISELECTOR(muon_pion, muon_pion);
+
+    
+    /**
+     * @brief Selects the leading and sub-leading shower.
+     * @details The leading and sub-leading shower are defined as the particles with
+     * the highest and second highest deposited_sum of the combined photon and electron types.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return pair of indices: {leading_shower, sub_leading_shower}.
+     */
+    template<class T>
+    std::pair<size_t, size_t> lead_and_sub_shower(const T & obj)
+    {
+        auto [lead_shower, sub_shower] = selectors::lead_and_sub_shower_index_depot(obj);
+        return {lead_shower, sub_shower};
+    }
+    REGISTER_BISELECTOR(lead_and_sub_shower, lead_and_sub_shower);
+
 }
 #endif // BISELECTORS_H
