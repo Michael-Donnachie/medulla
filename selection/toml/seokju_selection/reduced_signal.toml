@@ -1,0 +1,65 @@
+[parameters]
+gOre_threshold = 25 # MeV
+muon_threshold = 25 # MeV
+pion_threshold = 25 # MeV
+proton_threshold = 50 # MeV
+fiducial_xdist_pos = 20 # cm
+fiducial_xdist_neg = 20 # cm
+fiducial_ydist_pos = 20 # cm
+fiducial_ydist_neg = 20 # cm
+fiducial_zdist_pos = 50 # cm
+fiducial_zdist_neg = 10 # cm
+
+[general]
+output = "/exp/sbnd/data/users/sc5303/NCDelta/gOre_1g0p_1g1p_single"
+fsthresh = [
+  "@gOre_threshold",
+  "@muon_threshold",
+  "@pion_threshold",
+  "@proton_threshold",
+]
+pidfn = "gOre_pid"
+
+
+[[sample]]
+name = "simulation"
+# path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input001-reweighted.flat.caf.root" # Single file for testing
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root" # 1e20
+# path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root" # 5e18 old
+# path = "/pnfs/sbnd/scratch/users/mueller/MCP2025B/gen1_updated_training/hadd_output2/*.flat.root" # 5e18 new
+
+ismc = true
+disable = false
+
+
+
+[[tree]] # signal (NC ∆->Nγ) 1g0p
+name = "signal_1g0p"
+sim_only = true
+mode = "true"
+add_systematics = true
+cut = [
+    { name = "fiducial_cut",                type = "true"                                       },
+    { name = "containment_cut",             type = "true"                                       },
+    { name = "single_photon",               type = "true", parameters = [ "@gOre_threshold" ]   },
+    { name = "no_electrons",                type = "true", parameters = [ "@gOre_threshold" ]   },
+    { name = "no_muons",                    type = "true", parameters = [ "@muon_threshold" ]   },
+    { name = "no_charged_pions",            type = "true", parameters = [ "@pion_threshold" ]   },
+]
+
+
+[[tree]] # signal (NC ∆->Nγ) 1g0p
+name = "signal_1g0p"
+sim_only = true
+mode = "true"
+add_systematics = true
+cut = [
+    { name = "fiducial_cut",                type = "true"                                       },
+    { name = "containment_cut",             type = "true"                                       },
+    { name = "single_photon",               type = "true", parameters = [ "@gOre_threshold" ]   },
+    { name = "no_electrons",                type = "true", parameters = [ "@gOre_threshold" ]   },
+    { name = "no_muons",                    type = "true", parameters = [ "@muon_threshold" ]   },
+    { name = "no_charged_pions",            type = "true", parameters = [ "@pion_threshold" ]   },
+    { name = "has_nc_delta_ng_interaction", type = "event", decrements_exposure = false         },
+
+]

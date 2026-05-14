@@ -25,6 +25,8 @@
  */
 namespace ecut
 {
+
+
     /**
      * @brief Apply no cut to the event.
      * @details This cut always returns true, indicating that the event passes

@@ -2,16 +2,16 @@
 photon_threshold = 20.0
 photon_low = 10.0
 electron_threshold = 10.0
-electron_low = 10.0
+electron_low = 5.0
 muon_threshold = 100.0
-muon_low = 25.0
+muon_low = 5.0
 pion_threshold = 130.0
-pion_low = 25.0
+pion_low = 5.0
 proton_threshold = 25.0
-proton_low = 25.0
+proton_low = 5.0
 
 [general]
-output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/selection/single_shower_v1"
+output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/selection/single_shower_v2_rewighted_1e20"
 primfn = "default_primary_classification"
 pidfn = "default_pid"
 fsthresh = [
@@ -26,7 +26,9 @@ fsthresh = [
 [[sample]]
 name = "simulation"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
-path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*.flat.root"
+#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*.flat.root"
+#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*.flat.root"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
 #path = "/pnfs/sbnd/scratch/users/mueller/MCP2025B/gen1_updated_training/03162026/input*.flat.root"
 ismc = true
 disable = false # Optional: default = falses
@@ -136,11 +138,7 @@ cut = [
     { name = "valid_flashmatch",                            type = "reco"}
 ]
 branch = [
-    { name = "ke",                  type = "both_particle",     selector = "leading_depot_shower" },
-    { name = "ke",                  type = "both_particle",     selector = "sub_leading_depot_shower" },
-    { name = "total_depositions",   type = "both_particle",     selector = "leading_depot_shower"},
-    { name = "total_depositions",   type = "both_particle",     selector = "sub_leading_depot_shower"},
-
+    #interaction
     { name = "photon_multiplicity_inclusive",       type = "both", parameters = [ "@photon_threshold" ]},
     { name = "photon_depot_multiplicity_inclusive", type = "true", parameters = [ "@photon_threshold" ]},
     { name = "electron_multiplicity_inclusive",     type = "both", parameters = ["@electron_threshold"]},
@@ -148,27 +146,73 @@ branch = [
     { name = "proton_multiplicity_inclusive",       type = "both", parameters = [ "@proton_threshold" ]},
     { name = "muon_multiplicity_inclusive",         type = "both", parameters = ["@muon_threshold"]},
     { name = "category",                            type = "true"},
-
-    { name = "pid",                 type = "both_particle", selector="leading_depot_shower"},
-    { name = "pid",                 type = "both_particle", selector="sub_leading_depot_shower"},
-    { name = "shower_opening_angle",type = "both"},
+    #positioning
     { name = "vertex_x",            type = "both"},    
     { name = "vertex_y",            type = "both"},
     { name = "vertex_z",            type = "both"},
-    { name = "photon_softmax",      type = "reco_particle", selector = "leading_depot_shower"},
-    { name = "photon_softmax",      type = "reco_particle", selector = "sub_leading_depot_shower"},
-    { name = "electron_softmax",    type = "reco_particle", selector = "leading_depot_shower"},
-    { name = "electron_softmax",    type = "reco_particle", selector = "sub_leading_depot_shower"},
-    { name = "start_dedx",          type = "reco_particle", selector = "leading_depot_shower"},
-    { name = "start_dedx",          type = "reco_particle", selector = "sub_leading_depot_shower"},
-    { name = "start_straightness",  type = "reco_particle", selector = "leading_depot_shower"},
-    { name = "start_straightness",  type = "reco_particle", selector = "sub_leading_depot_shower"},
-    { name = "axial_spread",        type = "reco_particle", selector = "leading_depot_shower"},
-    { name = "axial_spread",        type = "reco_particle", selector = "sub_leading_depot_shower"},
-    { name = "directional_spread",  type = "reco_particle", selector = "leading_depot_shower"},
-    { name = "directional_spread",  type = "reco_particle", selector = "sub_leading_depot_shower"},
-    { name = "vertex_distance",     type = "reco_particle", selector = "leading_depot_shower"},
-    { name = "vertex_distance",     type = "reco_particle", selector = "sub_leading_depot_shower"},
+    { name = "shower_opening_angle",type = "both"},
+
+    #leading shower
+    #energy
+    { name = "ke",                  type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "total_depositions",   type = "both_particle",     selector = "leading_depot_shower"},
+    { name = "p",                   type = "both_particle",     selector = "leading_depot_shower"},
+    { name = "px",                  type = "both_particle",     selector = "leading_depot_shower"},
+    { name = "py",                  type = "both_particle",     selector = "leading_depot_shower"},
+    { name = "pz",                  type = "both_particle",     selector = "leading_depot_shower"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "leading_depot_shower"},
+    #positioning
+    { name = "start_x",             type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "start_y",             type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "start_z",             type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "end_x",               type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "end_y",               type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "end_z",               type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "start_dir_x",         type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "start_dir_y",         type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "start_dir_z",         type = "both_particle",     selector = "leading_depot_shower" },
+    #shape
+    { name = "number_fragments",    type ="both_particle",      selector = "leading_depot_shower"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "leading_depot_shower"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "leading_depot_shower"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "leading_depot_shower"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "leading_depot_shower"},
+    #identifiers
+    { name = "semantic_type",       type ="both_particle",      selector = "leading_depot_shower"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "leading_depot_shower"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "leading_depot_shower"},
+    { name = "pid",                 type = "both_particle",     selector = "leading_depot_shower"},
+
+    #subleading shower
+    #energy
+    { name = "ke",                  type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "total_depositions",   type = "both_particle",     selector = "sub_leading_depot_shower"},
+    { name = "p",                   type = "both_particle",     selector = "sub_leading_depot_shower"},
+    { name = "px",                  type = "both_particle",     selector = "sub_leading_depot_shower"},
+    { name = "py",                  type = "both_particle",     selector = "sub_leading_depot_shower"},
+    { name = "pz",                  type = "both_particle",     selector = "sub_leading_depot_shower"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "sub_leading_depot_shower"},
+    #positioning
+    { name = "start_x",             type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "start_y",             type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "start_z",             type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "end_x",               type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "end_y",               type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "end_z",               type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "start_dir_x",         type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "start_dir_y",         type = "both_particle",     selector = "sub_leading_depot_shower" },
+    { name = "start_dir_z",         type = "both_particle",     selector = "sub_leading_depot_shower" },
+    #shape
+    { name = "number_fragments",    type ="both_particle",      selector = "sub_leading_depot_shower"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "sub_leading_depot_shower"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "sub_leading_depot_shower"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "sub_leading_depot_shower"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "sub_leading_depot_shower"},
+    #identifiers
+    { name = "semantic_type",       type ="both_particle",      selector = "sub_leading_depot_shower"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "sub_leading_depot_shower"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "sub_leading_depot_shower"},
+    { name = "pid",                 type = "both_particle",     selector = "sub_leading_depot_shower"},
 ]
 
 [[tree]]  #reco single photon + no other particles (including e) + containment + netrino
