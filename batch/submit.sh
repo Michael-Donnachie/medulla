@@ -10,7 +10,7 @@
 
 # Initialize variables
 PROJECT=""
-TAG="develop"
+TAG="single_photon"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -75,7 +75,7 @@ setup cmake v3_27_4
 ups active
 
 # Build medulla
-git clone https://github.com/justinjmueller/medulla.git
+git clone https://github.com/Michael-Donnachie/medulla.git
 cd medulla
 git checkout ${TAG}
 mkdir build && cd build
