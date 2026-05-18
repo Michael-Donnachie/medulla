@@ -2,13 +2,13 @@
 photon_threshold = 20.0
 photon_low = 10.0
 electron_threshold = 10.0
-electron_low = 5.0
+electron_low = 1.0
 muon_threshold = 100.0
-muon_low = 5.0
+muon_low = 1.0
 pion_threshold = 130.0
-pion_low = 5.0
+pion_low = 1.0
 proton_threshold = 25.0
-proton_low = 5.0
+proton_low = 1.0
 
 [general]
 #output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/selection/single_shower_v2_rewighted_1e20"
@@ -57,6 +57,10 @@ branch = [
     { name = "pion_multiplicity_inclusive",         type = "both", parameters = [ "@pion_threshold" ]},
     { name = "proton_multiplicity_inclusive",       type = "both", parameters = [ "@proton_threshold" ]},
     { name = "muon_multiplicity_inclusive",         type = "both", parameters = ["@muon_threshold"]},
+    { name = "electron_multiplicity_inclusive_low",     type = "both", parameters = ["@electron_low"]},
+    { name = "pion_multiplicity_inclusive_low",         type = "both", parameters = [ "@pion_low" ]},
+    { name = "proton_multiplicity_inclusive_low",       type = "both", parameters = [ "@proton_low" ]},
+    { name = "muon_multiplicity_inclusive_low",         type = "both", parameters = ["@muon_low"]},
     { name = "category",                            type = "true"},
 
     { name = "pid",                 type = "both_particle", selector="leading_shower"},
@@ -138,12 +142,16 @@ cut = [
 ]
 branch = [
     #interaction
-    { name = "photon_multiplicity_inclusive",       type = "both", parameters = [ "@photon_threshold" ]},
-    { name = "electron_multiplicity_inclusive",     type = "both", parameters = ["@electron_threshold"]},
-    { name = "pion_multiplicity_inclusive",         type = "both", parameters = [ "@pion_threshold" ]},
-    { name = "proton_multiplicity_inclusive",       type = "both", parameters = [ "@proton_threshold" ]},
-    { name = "muon_multiplicity_inclusive",         type = "both", parameters = ["@muon_threshold"]},
-    { name = "category",                            type = "true"},
+    { name = "photon_multiplicity_inclusive",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "electron_multiplicity_inclusive",         type = "both", parameters = ["@electron_threshold"]},
+    { name = "pion_multiplicity_inclusive",             type = "both", parameters = [ "@pion_threshold" ]},
+    { name = "proton_multiplicity_inclusive",           type = "both", parameters = [ "@proton_threshold" ]},
+    { name = "muon_multiplicity_inclusive",             type = "both", parameters = ["@muon_threshold"]},
+    { name = "electron_multiplicity_inclusive_low",     type = "both", parameters = ["@electron_low"]},
+    { name = "pion_multiplicity_inclusive_low",         type = "both", parameters = [ "@pion_low" ]},
+    { name = "proton_multiplicity_inclusive_low",       type = "both", parameters = [ "@proton_low" ]},
+    { name = "muon_multiplicity_inclusive_low",         type = "both", parameters = ["@muon_low"]},
+    { name = "category",                                type = "true"},
     #positioning
     { name = "vertex_x",            type = "both"},    
     { name = "vertex_y",            type = "both"},
@@ -233,6 +241,10 @@ branch = [
     { name = "pion_multiplicity_inclusive",         type = "both", parameters = [ "@pion_threshold" ]},
     { name = "proton_multiplicity_inclusive",       type = "both", parameters = [ "@proton_threshold" ]},
     { name = "muon_multiplicity_inclusive",         type = "both", parameters = ["@muon_threshold"]},
+    { name = "electron_multiplicity_inclusive_low",     type = "both", parameters = ["@electron_low"]},
+    { name = "pion_multiplicity_inclusive_low",         type = "both", parameters = [ "@pion_low" ]},
+    { name = "proton_multiplicity_inclusive_low",       type = "both", parameters = [ "@proton_low" ]},
+    { name = "muon_multiplicity_inclusive_low",         type = "both", parameters = ["@muon_low"]},
     { name = "category",                            type = "true"},
 
     { name = "pid",                 type = "both_particle", selector="leading_shower"},

@@ -956,6 +956,33 @@ namespace vars
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, electron_multiplicity_inclusive, electron_multiplicity_inclusive);
     
+        /**
+     * @brief Variable for the inclusive electron multiplicity of the
+     * interaction, regardless of primary classification.
+     * @details Counts all electrons in the interaction (primary or otherwise)
+     * with kinetic energy at or above @p params[0]. This is the inclusive
+     * variant of @ref electron_multiplicity and is useful when the primary
+     * classification is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of electrons above the kinetic energy threshold,
+     * regardless of primary classification.
+     */
+    template<class T>
+    double electron_multiplicity_inclusive_low(const T & obj, std::vector<double> params={25.0,})
+    {
+        size_t count(0);
+        for(const auto & p : obj.particles)
+        {
+            if(pvars::pid(p) == pvars::kElectron && pvars::ke(p) >= params[0])
+                ++count;
+        }
+        return count;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, electron_multiplicity_inclusive_low, electron_multiplicity_inclusive_low);
+
     /**
      * @brief Variable for the inclusive muon multiplicity of the interaction,
      * regardless of primary classification.
@@ -984,6 +1011,33 @@ namespace vars
     REGISTER_VAR_SCOPE(RegistrationScope::Both, muon_multiplicity_inclusive, muon_multiplicity_inclusive);
 
     /**
+     * @brief Variable for the inclusive muon multiplicity of the interaction,
+     * regardless of primary classification.
+     * @details Counts all muons in the interaction (primary or otherwise) with
+     * kinetic energy at or above @p params[0]. This is the inclusive variant
+     * of @ref muon_multiplicity and is useful when the primary classification
+     * is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of muons above the kinetic energy threshold,
+     * regardless of primary classification.
+     */
+    template<class T>
+    double muon_multiplicity_inclusive_low(const T & obj, std::vector<double> params={25.0,})
+    {
+        size_t count(0);
+        for(const auto & p : obj.particles)
+        {
+            if(pvars::pid(p) == pvars::kMuon && pvars::ke(p) >= params[0])
+                ++count;
+        }
+        return count;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, muon_multiplicity_inclusive_low, muon_multiplicity_inclusive_low);
+
+    /**
      * @brief Variable for the inclusive charged pion multiplicity of the
      * interaction, regardless of primary classification.
      * @details Counts all charged pions in the interaction (primary or
@@ -1008,7 +1062,34 @@ namespace vars
         }
         return count;
     }
-    REGISTER_VAR_SCOPE(RegistrationScope::Both, pion_multiplicity_inclusive, pion_multiplicity_inclusive);
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, pion_multiplicity_inclusive, pion_multiplicity_inclusive);    
+    
+    /**
+     * @brief Variable for the inclusive charged pion multiplicity of the
+     * interaction, regardless of primary classification.
+     * @details Counts all charged pions in the interaction (primary or
+     * otherwise) with kinetic energy at or above @p params[0]. This is the
+     * inclusive variant of @ref pion_multiplicity and is useful when the
+     * primary classification is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of charged pions above the kinetic energy threshold,
+     * regardless of primary classification.
+     */    
+    template<class T>
+    double pion_multiplicity_inclusive_low(const T & obj, std::vector<double> params={25.0,})
+    {
+        size_t count(0);
+        for(const auto & p : obj.particles)
+        {
+            if(pvars::pid(p) == pvars::kPion && pvars::ke(p) >= params[0])
+                ++count;
+        }
+        return count;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, pion_multiplicity_inclusive_low, pion_multiplicity_inclusive_low);
 
     /**
      * @brief Variable for the inclusive proton multiplicity of the interaction,
@@ -1035,7 +1116,34 @@ namespace vars
         }
         return count;
     }
-    REGISTER_VAR_SCOPE(RegistrationScope::Both, proton_multiplicity_inclusive, proton_multiplicity_inclusive);
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, proton_multiplicity_inclusive, proton_multiplicity_inclusive);    
+    
+    /**
+     * @brief Variable for the inclusive proton multiplicity of the interaction,
+     * regardless of primary classification.
+     * @details Counts all protons in the interaction (primary or otherwise)
+     * with kinetic energy at or above @p params[0]. This is the inclusive
+     * variant of @ref proton_multiplicity and is useful when the primary
+     * classification is not enforced.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of protons above the kinetic energy threshold,
+     * regardless of primary classification.
+     */
+    template<class T>
+    double proton_multiplicity_inclusive_low(const T & obj, std::vector<double> params={25.0,})
+    {
+        size_t count(0);
+        for(const auto & p : obj.particles)
+        {
+            if(pvars::pid(p) == pvars::kProton && pvars::ke(p) >= params[0])
+                ++count;
+        }
+        return count;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, proton_multiplicity_inclusive_low, proton_multiplicity_inclusive_low);
 
     /**
      * @brief Variable for the non-primary shower multiplicity of the
