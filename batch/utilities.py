@@ -428,7 +428,7 @@ def launch_jobsub(
         '-N', str(njobs),
         '--memory=1800MB',
         f'--disk={"10GB" if exp == "sbnd" else "25GB"}',
-        '--expected-lifetime=3h',
+        '--expected-lifetime=5h',
         '--resource-provides=usage_model=DEDICATED,OPPORTUNISTIC,OFFSITE',
         "--append_condor_requirements='(TARGET.HAS_Singularity==true)'",
         '--singularity-image=/cvmfs/singularity.opensciencegrid.org/fermilab/fnal-wn-sl7:latest',
