@@ -382,7 +382,7 @@ namespace cuts
      * @return true if the showers fip is within fiducial volume
      */
     template<class T>
-    bool contained_shower_fip_cut(const T & obj){
+    bool contained_shower_fip_cut_depot(const T & obj){
         std::vector<double> params={1.0};
         size_t lead_shower_index = selectors::leading_depot_shower(obj);
         size_t sub_lead_shower_index = selectors::sub_leading_depot_shower(obj);
@@ -429,8 +429,75 @@ namespace cuts
             }
         }
     }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_shower_fip_cut, contained_shower_fip_cut);
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_shower_fip_cut_depot, contained_shower_fip_cut_depot);
  
+    /**
+     * @brief Apply a fiducial volume cut on showers based on their first interaction
+     * point (FIP) and ke threshold.
+     * @details Classifies an interaction as contained or not based on whether
+     * the leading (and sub-leading, if present) shower's first interaction point
+     * lies within the TPC fiducial margin. Only showers with a ke
+     * at or above 20 MeV are subject to the containment check; showers below
+     * this threshold are treated as contained regardless of their FIP. If no
+     * showers are found in the interaction, the interaction is also treated as
+     * contained.
+     *
+     * The containment check is delegated to @ref pcuts::fip_contained with a
+     * margin parameter of 1.0 cm.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the showers fip is within fiducial volume
+     */
+    template<class T>
+    bool contained_shower_fip_cut(const T & obj){
+        std::vector<double> params={1.0};
+        size_t lead_shower_index = selectors::leading_shower(obj);
+        size_t sub_lead_shower_index = selectors::sub_leading_shower(obj);
+
+        if (lead_shower_index == kNoMatch){
+            return true;
+        }
+
+        else if (sub_lead_shower_index == kNoMatch) {
+            auto & lead_shower(obj.particles[lead_shower_index]);
+            if (lead_shower.ke>=20){
+                if (pcuts::fip_contained(lead_shower,params)==1){
+                return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
+        else {
+            auto & lead_shower(obj.particles[lead_shower_index]);
+            auto & sub_lead_shower(obj.particles[sub_lead_shower_index]);
+            if (lead_shower.ke>=20 && sub_lead_shower.ke>=20){
+                if (pcuts::fip_contained(lead_shower,params)==1 && pcuts::fip_contained(sub_lead_shower,params)==1){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else if (lead_shower.ke>=20){
+                if (pcuts::fip_contained(lead_shower,params)==1){
+                return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else{
+                return true;
+            }
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_shower_fip_cut, contained_shower_fip_cut);
+
     /**
      * @brief Apply a cut to select dirt interactions (vertex outside the TPC).
      * @details Classifies an interaction as a "dirt" event if its vertex lies
@@ -811,6 +878,63 @@ namespace cuts
     }
     REGISTER_CUT_SCOPE(RegistrationScope::Both, single_shower_deposited_cut, single_shower_deposited_cut);
 
+    /**
+     * @brief Apply a cut selecting single-shower-like topology by kinetic energy.
+     * @details Selects interactions consistent with a single observed shower,
+     * including cases where two showers are reconstructed but are nearly
+     * collinear (opening angle < 20°) and thus consistent with
+     * a single forward-going electromagnetic shower. Shower energies are
+     * assessed using ke.
+     * 
+     * Selection logic:
+     *  - Exactly one shower with ke ≥ @p params[0]: passes.
+     *  - Exactly two showers both with ke ≥ 20 MeV and opening
+     *    angle < 20°: passes.
+     *  - All other cases: fails.
+     *
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV) for the single-shower count. Defaults to 25 MeV.
+     * @return true if the interaction satisfies the single-shower-like topology
+     * under the kinetic energy criterion.
+     */
+    template<class T>
+    bool single_shower_observed_cut(const T & obj, std::vector<double> params={25,})
+    {
+        auto [lead_shower_index, sub_shower_index] = selectors::lead_and_sub_shower_index_depot(obj);
+        double opening_angle;
+
+        if(lead_shower_index == kNoMatch || sub_shower_index == kNoMatch){
+            opening_angle = kNoMatchValue; 
+        }
+        
+        else{
+            auto & lead_shower(obj.particles[lead_shower_index]);
+            auto & sub_shower(obj.particles[sub_shower_index]);
+            if (lead_shower.ke >=20 && sub_shower.ke>=20){
+                opening_angle =  bvars::opening_angle(lead_shower, sub_shower);
+            }
+            else{
+                opening_angle =  kNoMatchValue;
+            }
+        }
+        
+        int shower_multiplicity = 0;
+        shower_multiplicity = shower_multiplicity + particle_multiplicity_inclusive(obj, 2, 0, params);
+        shower_multiplicity = shower_multiplicity + particle_multiplicity_inclusive(obj, 2, 1, params);
+        
+        if (shower_multiplicity==1){
+            return true;
+        }
+        else if (shower_multiplicity == 2 && opening_angle <0.34906585){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, single_shower_observed_cut, single_shower_observed_cut);
 
     /**
      * @brief Binding for a single particle photon multiplicity cut.

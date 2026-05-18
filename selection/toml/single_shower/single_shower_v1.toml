@@ -11,8 +11,8 @@ proton_threshold = 25.0
 proton_low = 5.0
 
 [general]
-#output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/selection/single_shower_v2_rewighted_1e20"
-output = "/pnfs/sbnd/scratch/users/mdonnach/single_shower_1e20_reweighted_output/single_shower_v2_rewighted_1e20"
+output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/selection/single_shower_v2_rewighted_1e20"
+#output = "/pnfs/sbnd/scratch/users/mdonnach/single_shower_1e20_reweighted_output/single_shower_v2_rewighted_1e20"
 primfn = "default_primary_classification"
 pidfn = "default_pid"
 fsthresh = [
@@ -29,7 +29,7 @@ name = "simulation"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*.flat.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*.flat.root"
-path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input197-reweighted.flat.caf.root"
 #path = "root://fndca1.fnal.gov:1094//pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
 #path = "/pnfs/sbnd/scratch/users/mueller/MCP2025B/gen1_updated_training/03162026/input*.flat.root"
 ismc = true
@@ -120,7 +120,7 @@ cut = [
     { name = "single_shower_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_charged_pions_inclusive",              type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "reco",  parameters = [ "@muon_threshold" ]},
-    { name = "contained_shower_fip_cut",                type = "reco"},
+    { name = "contained_shower_fip_cut_depot",                type = "reco"},
 ]
 branch = [
     { name = "category",          type = "true"}
@@ -136,7 +136,7 @@ cut = [
     { name = "single_shower_deposited_cut",                 type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_charged_pions_inclusive",                  type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]},
-    { name = "contained_shower_fip_cut",                    type = "reco"},
+    { name = "contained_shower_fip_cut_depot",                    type = "reco"},
     { name = "valid_flashmatch",                            type = "reco"}
 ]
 branch = [

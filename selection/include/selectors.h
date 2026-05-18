@@ -381,6 +381,130 @@ namespace selectors
     }
 
     /**
+     * @brief Finds the index corresponding to the leading and sub-leading shower, 
+     * ranked by kinetic energy.
+     * @details Returns the index of the shower with the highest and second-highest
+     * kinetic energy (ke) in the interaction
+     * @note created for single shower selection
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the leading and sub-leading shower by kinetic energy, or
+     * kNoMatch if showers are not found.
+     */
+    template<class T>
+    std::tuple<size_t, size_t> lead_and_sub_shower_index(const T & obj)
+    {
+        double sub_photon(0);
+        double leading_photon(0);
+        double sub_electron(0);
+        double leading_electron(0);
+
+        size_t index_lead_photon(kNoMatch);
+        size_t index_sub_photon(kNoMatch);
+        size_t index_lead_electron(kNoMatch);
+        size_t index_sub_electron(kNoMatch);
+        for(size_t i(0); i < obj.particles.size(); ++i)
+        {
+            const auto & p = obj.particles[i];
+            double energy(pvars::ke(p));
+            if(pvars::pid(p) == pvars::kPhoton && energy > sub_photon)
+            {
+                if(energy > leading_photon)
+                {
+                    sub_photon = leading_photon;
+                    index_sub_photon = index_lead_photon;
+
+                    leading_photon = energy;
+                    index_lead_photon = i;
+                }
+                else{
+                    sub_photon = energy;
+                    index_sub_photon = i;
+                }
+                
+            }
+
+            else if(pvars::pid(p) == pvars::kElectron && energy > sub_electron){
+                if(energy > leading_electron)
+                {
+                    sub_electron = leading_electron;
+                    index_sub_electron = index_lead_electron;
+
+                    leading_electron = energy;
+                    index_lead_electron = i;
+                }
+                else{
+                    sub_electron = energy;
+                    index_sub_electron = i;
+                }
+                
+            }
+        }
+
+        size_t index_lead(kNoMatch);
+        size_t index_sub(kNoMatch);
+        if (leading_photon>leading_electron){
+            index_lead = index_lead_photon;
+            if (sub_photon>leading_electron){
+                index_sub = index_sub_photon;
+            }
+            else{
+                index_sub = index_lead_electron;
+            }
+        }
+        else{
+            index_lead = index_lead_electron;
+            if (sub_electron>leading_photon){
+                index_sub = index_sub_electron;
+            }
+            else{
+                index_sub = index_lead_photon;
+            }
+        }
+        
+        return {index_lead, index_sub};
+    }
+
+
+    /**
+     * @brief Finds the index corresponding to the leading shower, ranked by
+     * kinetic energy.
+     * @details Returns the index of the shower with the highest kinetic
+     * energy (ke) in the interaction, via
+     * @ref lead_and_sublead_shower_index. 
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the leading shower by kinetic energy, or
+     * kNoMatch if no showers are found.
+     */
+    template<class T>
+    size_t leading_shower(const T & obj)
+    {
+        auto [index_lead, index_sub] = lead_and_sub_shower_index(obj);
+        return index_lead;
+    }
+    REGISTER_SELECTOR(leading_shower, leading_shower);
+
+    /**
+     * @brief Finds the index corresponding to the sub-leading shower, ranked by
+     * kinetic energy.
+     * @details Returns the index of the shower with the second highest kinetic
+     * energy (ke) in the interaction, via
+     * @ref lead_and_sublead_shower_index. 
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the sub-leading shower by kinetic energy, or
+     * kNoMatch if no showers are found.
+     */
+    template<class T>
+    size_t sub_leading_shower(const T & obj)
+    {
+        auto [index_lead, index_sub] = lead_and_sub_shower_index(obj);
+        return index_sub;
+    }
+    REGISTER_SELECTOR(sub_leading_shower, sub_leading_shower);
+
+    /**
      * @brief Finds the index corresponding to the leading shower, ranked by
      * deposited energy.
      * @details Returns the index of the shower with the highest deposited
