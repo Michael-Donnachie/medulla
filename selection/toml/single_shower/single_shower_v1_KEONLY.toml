@@ -12,7 +12,8 @@ proton_low = 1.0
 
 [general]
 #output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/selection/single_shower_v2_rewighted_1e20"
-output = "/pnfs/sbnd/scratch/users/mdonnach/single_shower_1e20_reweighted_output/single_shower_v2_rewighted_1e20"
+#output = "/pnfs/sbnd/scratch/users/mdonnach/single_shower_1e20_reweighted_output/single_shower_v2_rewighted_newdedx_nodepot"
+output = "test"#
 primfn = "default_primary_classification"
 pidfn = "default_pid"
 fsthresh = [
@@ -27,9 +28,9 @@ fsthresh = [
 [[sample]]
 name = "simulation"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
-#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*.flat.root"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*.flat.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*.flat.root"
-path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
+#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
 #path = "root://fndca1.fnal.gov:1094//pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
 #path = "/pnfs/sbnd/scratch/users/mueller/MCP2025B/gen1_updated_training/03162026/input*.flat.root"
 ismc = true
