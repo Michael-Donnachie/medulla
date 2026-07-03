@@ -1,0 +1,276 @@
+[general]
+output = "sbnd_pi0_sidebands"
+primfn = "default_primary_classification"
+pidfn  = "default_pid"
+fsthresh = [
+    "@reco_photon_threshold",
+    "@reco_electron_threshold",
+    "@reco_muon_threshold",
+    "@reco_pion_threshold",
+    "@reco_proton_threshold",
+]
+
+[parameters]
+true_photon_threshold    = 0.0
+reco_photon_threshold    = 25.0
+true_electron_threshold  = 0.0
+reco_electron_threshold  = 0.0
+true_muon_threshold      = 143.425
+reco_muon_threshold      = 143.425
+true_second_muon_threshold = 25.0
+reco_second_muon_threshold = 25.0
+true_pi0_threshold       = 0.0
+reco_pi0_threshold       = 0.0
+true_pion_threshold      = 0.0
+reco_pion_threshold      = 25.0
+true_proton_threshold    = 0.0
+reco_proton_threshold    = 0.0
+pi0_mass_veto_low        = 60.0
+pi0_mass_veto_high       = 300.0
+flash_low_t              = -0.5
+flash_high_t             =  1.6
+
+[[sample]]
+name = "cv"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
+# path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input001-reweighted.flat.caf.root"
+
+ismc = true
+disable = false
+
+# ── CC π0 sideband ────────────────────────────────────────────────────────────
+# Requires a single muon + two photons consistent with π0 decay.
+# Equivalent to the ICARUS CC π0 signal selection ported to SBND.
+[[tree]]
+name         = "selected_ccpi0"
+mode         = "reco"
+sim_only     = false
+# add_exposure = true
+cut = [
+    {name = "fiducial_cut",         type = "reco"},
+    {name = "containment_cut",      type = "reco"},
+    {name = "time_containment_cut", type = "reco"},
+    {name = "flash_cut",            type = "reco", parameters = ["@flash_low_t", "@flash_high_t"]},
+    {name = "single_muon",          type = "reco", parameters = ["@reco_muon_threshold"]},
+    {name = "single_muon",          type = "reco", parameters = ["@reco_second_muon_threshold"]},
+    {name = "no_charged_pions",     type = "reco", parameters = ["@reco_pion_threshold"]},
+    {name = "two_photons",          type = "reco", parameters = ["@reco_photon_threshold"]},
+    {name = "valid_pi0_mass_cut",   type = "reco", parameters = ["@pi0_mass_veto_low", "@pi0_mass_veto_high"]},
+]
+branch = [
+    # MC Truth interaction info
+    {name = "pdg",              type = "mctruth"},
+    {name = "baseline",         type = "mctruth"},
+    {name = "cc",               type = "mctruth"},
+    {name = "neutrino_energy",  type = "mctruth"},
+    {name = "neutrino_Q2",      type = "mctruth"},
+    {name = "neutrino_W",       type = "mctruth"},
+    {name = "interaction_mode", type = "mctruth"},
+    {name = "interaction_type", type = "mctruth"},
+    {name = "nphotons_srtruth",   type = "mctruth", parameters = ["@true_photon_threshold"]},
+    {name = "nelectrons_srtruth", type = "mctruth", parameters = ["@true_electron_threshold"]},
+    {name = "nmuons_srtruth",     type = "mctruth", parameters = ["@true_muon_threshold"]},
+    {name = "npi0s_srtruth",      type = "mctruth", parameters = ["@true_pi0_threshold"]},
+    {name = "npions_srtruth",     type = "mctruth", parameters = ["@true_pion_threshold"]},
+    {name = "netas_srtruth",      type = "mctruth"},
+    {name = "nprotons_srtruth",   type = "mctruth", parameters = ["@true_proton_threshold"]},
+
+    # SPINE interaction info
+    {name = "interaction_id",         type = "both"},
+    {name = "neutrino_id",            type = "true"},
+]
+
+# ── NC π0 sideband ────────────────────────────────────────────────────────────
+# Muon cuts inverted relative to CC: require no reconstructed muon.
+[[tree]]
+name         = "selected_ncpi0"
+mode         = "reco"
+sim_only     = false
+# add_exposure = true
+cut = [
+    {name = "fiducial_cut",         type = "reco"},
+    {name = "containment_cut",      type = "reco"},
+    {name = "time_containment_cut", type = "reco"},
+    {name = "flash_cut",            type = "reco", parameters = ["@flash_low_t", "@flash_high_t"]},
+    {name = "no_muons",             type = "reco", parameters = ["@reco_muon_threshold"]},
+    {name = "no_charged_pions",     type = "reco", parameters = ["@reco_pion_threshold"]},
+    {name = "two_photons",          type = "reco", parameters = ["@reco_photon_threshold"]},
+    {name = "valid_pi0_mass_cut",   type = "reco", parameters = ["@pi0_mass_veto_low", "@pi0_mass_veto_high"]},
+]
+branch = [
+    # MC Truth interaction info
+    {name = "pdg",              type = "mctruth"},
+    {name = "baseline",         type = "mctruth"},
+    {name = "cc",               type = "mctruth"},
+    {name = "neutrino_energy",  type = "mctruth"},
+    {name = "neutrino_Q2",      type = "mctruth"},
+    {name = "neutrino_W",       type = "mctruth"},
+    {name = "interaction_mode", type = "mctruth"},
+    {name = "interaction_type", type = "mctruth"},
+    {name = "nphotons_srtruth",   type = "mctruth", parameters = ["@true_photon_threshold"]},
+    {name = "nelectrons_srtruth", type = "mctruth", parameters = ["@true_electron_threshold"]},
+    {name = "nmuons_srtruth",     type = "mctruth", parameters = ["@true_muon_threshold"]},
+    {name = "npi0s_srtruth",      type = "mctruth", parameters = ["@true_pi0_threshold"]},
+    {name = "npions_srtruth",     type = "mctruth", parameters = ["@true_pion_threshold"]},
+    {name = "netas_srtruth",      type = "mctruth"},
+    {name = "nprotons_srtruth",   type = "mctruth", parameters = ["@true_proton_threshold"]},
+
+    # SPINE interaction info
+    {name = "interaction_id",         type = "both"},
+    {name = "neutrino_id",            type = "true"},
+]
+
+# ── Multi-shower background sideband ──────────────────────────────────────────
+# Requires >= 2 photons; no muon requirement, no π0 mass window.
+# NOTE: two_photons currently selects exactly 2; update to a >= 2 cut when available.
+[[tree]]
+name         = "selected_multishower"
+mode         = "reco"
+sim_only     = false
+# add_exposure = true
+cut = [
+    {name = "fiducial_cut",         type = "reco"},
+    {name = "containment_cut",      type = "reco"},
+    {name = "time_containment_cut", type = "reco"},
+    {name = "flash_cut",            type = "reco", parameters = ["@flash_low_t", "@flash_high_t"]},
+    {name = "two_photons",          type = "reco", parameters = ["@reco_photon_threshold"]},
+]
+branch = [
+    # MC Truth interaction info
+    {name = "pdg",              type = "mctruth"},
+    {name = "baseline",         type = "mctruth"},
+    {name = "cc",               type = "mctruth"},
+    {name = "neutrino_energy",  type = "mctruth"},
+    {name = "neutrino_Q2",      type = "mctruth"},
+    {name = "neutrino_W",       type = "mctruth"},
+    {name = "interaction_mode", type = "mctruth"},
+    {name = "interaction_type", type = "mctruth"},
+    {name = "nphotons_srtruth",   type = "mctruth", parameters = ["@true_photon_threshold"]},
+    {name = "nelectrons_srtruth", type = "mctruth", parameters = ["@true_electron_threshold"]},
+    {name = "nmuons_srtruth",     type = "mctruth", parameters = ["@true_muon_threshold"]},
+    {name = "npi0s_srtruth",      type = "mctruth", parameters = ["@true_pi0_threshold"]},
+    {name = "npions_srtruth",     type = "mctruth", parameters = ["@true_pion_threshold"]},
+    {name = "netas_srtruth",      type = "mctruth"},
+    {name = "nprotons_srtruth",   type = "mctruth", parameters = ["@true_proton_threshold"]},
+
+    # SPINE interaction info
+    {name = "interaction_id",         type = "both"},
+    {name = "neutrino_id",            type = "true"},
+]
+
+# ── CC π0 sideband ────────────────────────────────────────────────────────────
+# Requires a single muon + two photons consistent with π0 decay.
+# Equivalent to the ICARUS CC π0 signal selection ported to SBND.
+[[tree]]
+name         = "true_ccpi0"
+mode         = "true"
+sim_only     = true
+# add_exposure = true
+cut = [
+    {name = "fiducial_cut",         type = "true"},
+    {name = "containment_cut",      type = "true"},
+    {name = "time_containment_cut", type = "true"},
+    {name = "single_muon",          type = "true", parameters = ["@true_muon_threshold"]},
+    {name = "single_muon",          type = "true", parameters = ["@true_second_muon_threshold"]},
+    {name = "no_charged_pions",     type = "true", parameters = ["@true_pion_threshold"]},
+    {name = "two_photons",          type = "true", parameters = ["@true_photon_threshold"]},
+    {name = "valid_pi0_mass_cut",   type = "true", parameters = ["@pi0_mass_veto_low", "@pi0_mass_veto_high"]},
+]
+branch = [
+    # MC Truth interaction info
+    {name = "pdg",              type = "mctruth"},
+    {name = "baseline",         type = "mctruth"},
+    {name = "cc",               type = "mctruth"},
+    {name = "neutrino_energy",  type = "mctruth"},
+    {name = "neutrino_Q2",      type = "mctruth"},
+    {name = "neutrino_W",       type = "mctruth"},
+    {name = "interaction_mode", type = "mctruth"},
+    {name = "interaction_type", type = "mctruth"},
+    {name = "nphotons_srtruth",   type = "mctruth", parameters = ["@true_photon_threshold"]},
+    {name = "nelectrons_srtruth", type = "mctruth", parameters = ["@true_electron_threshold"]},
+    {name = "nmuons_srtruth",     type = "mctruth", parameters = ["@true_muon_threshold"]},
+    {name = "npi0s_srtruth",      type = "mctruth", parameters = ["@true_pi0_threshold"]},
+    {name = "npions_srtruth",     type = "mctruth", parameters = ["@true_pion_threshold"]},
+    {name = "netas_srtruth",      type = "mctruth"},
+    {name = "nprotons_srtruth",   type = "mctruth", parameters = ["@true_proton_threshold"]},
+
+    # SPINE interaction info
+    {name = "interaction_id",         type = "both"},
+    {name = "neutrino_id",            type = "true"},
+]
+
+# ── NC π0 sideband ────────────────────────────────────────────────────────────
+# Muon cuts inverted relative to CC: require no reconstructed muon.
+[[tree]]
+name         = "true_ncpi0"
+mode         = "true"
+sim_only     = true
+# add_exposure = true
+cut = [
+    {name = "fiducial_cut",         type = "true"},
+    {name = "containment_cut",      type = "true"},
+    {name = "time_containment_cut", type = "true"},
+    {name = "no_muons",             type = "true", parameters = ["@true_muon_threshold"]},
+    {name = "no_charged_pions",     type = "true", parameters = ["@true_pion_threshold"]},
+    {name = "two_photons",          type = "true", parameters = ["@true_photon_threshold"]},
+    {name = "valid_pi0_mass_cut",   type = "true", parameters = ["@pi0_mass_veto_low", "@pi0_mass_veto_high"]},
+]
+branch = [
+    # MC Truth interaction info
+    {name = "pdg",              type = "mctruth"},
+    {name = "baseline",         type = "mctruth"},
+    {name = "cc",               type = "mctruth"},
+    {name = "neutrino_energy",  type = "mctruth"},
+    {name = "neutrino_Q2",      type = "mctruth"},
+    {name = "neutrino_W",       type = "mctruth"},
+    {name = "interaction_mode", type = "mctruth"},
+    {name = "interaction_type", type = "mctruth"},
+    {name = "nphotons_srtruth",   type = "mctruth", parameters = ["@true_photon_threshold"]},
+    {name = "nelectrons_srtruth", type = "mctruth", parameters = ["@true_electron_threshold"]},
+    {name = "nmuons_srtruth",     type = "mctruth", parameters = ["@true_muon_threshold"]},
+    {name = "npi0s_srtruth",      type = "mctruth", parameters = ["@true_pi0_threshold"]},
+    {name = "npions_srtruth",     type = "mctruth", parameters = ["@true_pion_threshold"]},
+    {name = "netas_srtruth",      type = "mctruth"},
+    {name = "nprotons_srtruth",   type = "mctruth", parameters = ["@true_proton_threshold"]},
+
+    # SPINE interaction info
+    {name = "interaction_id",         type = "both"},
+    {name = "neutrino_id",            type = "true"},
+]
+
+# ── Multi-shower background sideband ──────────────────────────────────────────
+# Requires >= 2 photons; no muon requirement, no π0 mass window.
+# NOTE: two_photons currently selects exactly 2; update to a >= 2 cut when available.
+[[tree]]
+name         = "true_multishower"
+mode         = "true"
+sim_only     = true
+# add_exposure = true
+cut = [
+    {name = "fiducial_cut",         type = "true"},
+    {name = "containment_cut",      type = "true"},
+    {name = "time_containment_cut", type = "true"},
+    {name = "two_photons",          type = "true", parameters = ["@true_photon_threshold"]},
+]
+branch = [
+    # MC Truth interaction info
+    {name = "pdg",              type = "mctruth"},
+    {name = "baseline",         type = "mctruth"},
+    {name = "cc",               type = "mctruth"},
+    {name = "neutrino_energy",  type = "mctruth"},
+    {name = "neutrino_Q2",      type = "mctruth"},
+    {name = "neutrino_W",       type = "mctruth"},
+    {name = "interaction_mode", type = "mctruth"},
+    {name = "interaction_type", type = "mctruth"},
+    {name = "nphotons_srtruth",   type = "mctruth", parameters = ["@true_photon_threshold"]},
+    {name = "nelectrons_srtruth", type = "mctruth", parameters = ["@true_electron_threshold"]},
+    {name = "nmuons_srtruth",     type = "mctruth", parameters = ["@true_muon_threshold"]},
+    {name = "npi0s_srtruth",      type = "mctruth", parameters = ["@true_pi0_threshold"]},
+    {name = "npions_srtruth",     type = "mctruth", parameters = ["@true_pion_threshold"]},
+    {name = "netas_srtruth",      type = "mctruth"},
+    {name = "nprotons_srtruth",   type = "mctruth", parameters = ["@true_proton_threshold"]},
+
+    # SPINE interaction info
+    {name = "interaction_id",         type = "both"},
+    {name = "neutrino_id",            type = "true"},
+]

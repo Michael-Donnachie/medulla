@@ -381,6 +381,85 @@ namespace selectors
     }
 
     /**
+     * @brief Finds the index corresponding to the two highest deposition showers 
+     * between the max and min threshold ranked by deposited energy.
+     * @details Returns the index of the shower with the highest and second-highest
+     * deposited energy (depositions_sum) bewtween the two energy thresholds in the interaction
+     * @note created for single shower selection - used to remove electrons between 10-20MeV
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the two highest energy showers between a threshold
+     */
+    template<class T>
+    std::tuple<size_t, size_t> mid_and_submid_shower_index_depot(const T & obj)
+    {
+        double sub_photon_depot(0);
+        double leading_photon_depot(0);
+        double sub_electron_depot(0);
+        double leading_electron_depot(0);
+
+        size_t index_lead_photon(kNoMatch);
+        size_t index_sub_photon(kNoMatch);
+        size_t index_lead_electron(kNoMatch);
+        size_t index_sub_electron(kNoMatch);
+        for(size_t i(0); i < obj.particles.size(); ++i)
+        {
+            const auto & p = obj.particles[i];
+            double energy(pvars::total_depositions(p));
+            if(pvars::pid(p) == pvars::kPhoton && energy > sub_photon_depot && energy < 20 && energy > 10)
+            {
+                if(energy > leading_photon_depot)
+                {
+                    sub_photon_depot = leading_photon_depot;
+                    index_sub_photon = index_lead_photon;
+
+                    leading_photon_depot = energy;
+                    index_lead_photon = i;
+                }
+                else{
+                    sub_photon_depot = energy;
+                    index_sub_photon = i;
+                }
+                
+            }
+
+            else if(pvars::pid(p) == pvars::kElectron && energy > sub_electron_depot && energy < 20 && energy > 10){
+                if(energy > leading_electron_depot)
+                {
+                    sub_electron_depot = leading_electron_depot;
+                    index_sub_electron = index_lead_electron;
+
+                    leading_electron_depot = energy;
+                    index_lead_electron = i;
+                }
+                else{
+                    sub_electron_depot = energy;
+                    index_sub_electron = i;
+                }
+                
+            }
+        }
+
+        size_t index_lead(kNoMatch);
+        size_t index_sub(kNoMatch);
+        if (index_lead_electron == kNoMatch){
+            index_lead = index_lead_photon;
+            index_sub = index_sub_photon;
+        }
+        else if(index_sub_electron==kNoMatch){
+            index_lead = index_lead_electron;
+            index_sub = index_sub_photon;
+        }
+        else{
+            index_lead = index_lead_electron;
+            index_sub = index_sub_electron;
+        }
+        
+        return {index_lead, index_sub};
+    }
+
+
+    /**
      * @brief Finds the index corresponding to the leading and sub-leading shower, 
      * ranked by kinetic energy.
      * @details Returns the index of the shower with the highest and second-highest
@@ -522,6 +601,25 @@ namespace selectors
         return index_lead;
     }
     REGISTER_SELECTOR(leading_depot_shower, leading_depot_shower);
+
+
+    template<class T>
+    size_t mid_depot_shower(const T & obj)
+    {
+        auto [index_lead, index_sub] = mid_and_submid_shower_index_depot(obj);
+        return index_lead;
+    }
+    REGISTER_SELECTOR(mid_depot_shower, mid_depot_shower);
+    
+
+    template<class T>
+    size_t submid_depot_shower(const T & obj)
+    {
+        auto [index_lead, index_sub] = mid_and_submid_shower_index_depot(obj);
+        return index_lead;
+    }
+    REGISTER_SELECTOR(submid_depot_shower, submid_depot_shower);
+
 
     /**
      * @brief Finds the index corresponding to the sub-leading shower, ranked by
