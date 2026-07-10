@@ -218,6 +218,8 @@ branch = [
     { name = "vertex_y",            type = "both"},
     { name = "vertex_z",            type = "both"},
     { name = "shower_opening_angle",type = "both"},
+    #electron
+    { name = "ke",                  type = "both_particle",     selector = "leading_electron"},
 
     #leading shower
     #energy
@@ -318,6 +320,8 @@ branch = [
     { name = "vertex_y",            type = "both"},
     { name = "vertex_z",            type = "both"},
     { name = "shower_opening_angle",type = "both"},
+    #electron
+    { name = "ke",                  type = "both_particle",     selector = "leading_electron"},
 
     #leading shower
     #energy
@@ -439,16 +443,18 @@ branch = [
     { name = "start_dir_y",         type = "both_particle",     selector = "leading_depot_shower" },
     { name = "start_dir_z",         type = "both_particle",     selector = "leading_depot_shower" },
     #shape
-    { name = "number_fragments",    type ="both_particle",      selector = "leading_depot_shower"},
+    { name = "number_fragments",    type = "both_particle",     selector = "leading_depot_shower"},
     { name = "start_straightness",  type = "reco_particle",     selector = "leading_depot_shower"},
     { name = "axial_spread",        type = "reco_particle",     selector = "leading_depot_shower"},
     { name = "directional_spread",  type = "reco_particle",     selector = "leading_depot_shower"},
     { name = "vertex_distance",     type = "reco_particle",     selector = "leading_depot_shower"},
     #identifiers
-    { name = "semantic_type",       type ="both_particle",      selector = "leading_depot_shower"},
+    { name = "semantic_type",       type = "both_particle",     selector = "leading_depot_shower"},
     { name = "photon_softmax",      type = "reco_particle",     selector = "leading_depot_shower"},
     { name = "electron_softmax",    type = "reco_particle",     selector = "leading_depot_shower"},
     { name = "pid",                 type = "both_particle",     selector = "leading_depot_shower"},
+    #electron
+    { name = "ke",                  type = "both_particle",     selector = "leading_electron"},
 
     #subleading shower
     #energy

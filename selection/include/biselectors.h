@@ -73,6 +73,22 @@ namespace biselectors
     }
     REGISTER_BISELECTOR(muon_pion, muon_pion);
 
+    /**
+     * @brief Selects the leading and sub-leading photon.
+     * @details The leading and sub-leading photon are defined as the particles with
+     * the highest and second highest kinetic energy with pid==0. 
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return pair of indices: {leading_photon, sub_leading_photon}.
+     */
+    template<class T>
+    std::pair<size_t, size_t> lead_and_sub_photon(const T & obj)
+    {   
+        return {selectors::leading_particle_index(obj,pvars::kPhoton), selectors::sub_leading_particle_index(obj,pvars::kPhoton)};
+       
+    }
+    REGISTER_BISELECTOR(lead_and_sub_photon, lead_and_sub_photon);
+
     
     /**
      * @brief Selects the leading and sub-leading shower.
@@ -83,12 +99,12 @@ namespace biselectors
      * @return pair of indices: {leading_shower, sub_leading_shower}.
      */
     template<class T>
-    std::pair<size_t, size_t> lead_and_sub_shower(const T & obj)
+    std::pair<size_t, size_t> lead_and_sub_depot_shower(const T & obj)
     {
         auto [lead_shower, sub_shower] = selectors::lead_and_sub_shower_index_depot(obj);
         return {lead_shower, sub_shower};
     }
-    REGISTER_BISELECTOR(lead_and_sub_shower, lead_and_sub_shower);
+    REGISTER_BISELECTOR(lead_and_sub_depot_shower, lead_and_sub_depot_shower);
 
 }
 #endif // BISELECTORS_H

@@ -955,6 +955,24 @@ namespace cuts
     REGISTER_CUT_SCOPE(RegistrationScope::Both, single_photon, single_photon);
 
     /**
+     * @brief Binding for a double particle photon multiplicity cut.
+     * @details This function binds the double particle multiplicity cut for
+     * photons, which corresponds to the index 0 in the
+     * @ref utilities::count_primaries function.
+     * @param obj the interaction to select on.
+     * @param params the parameters for the cut. In this case, this sets the
+     * kinetic energy threshold for a photon to count towards the
+     * multiplicity. Defaults to 25 MeV.
+     * @return true if the interaction has a double primary photon.
+     */
+    template<class T>
+    bool double_photon(const T & obj, std::vector<double> params={25.0,})
+    {
+        return particle_multiplicity(obj, 2, 0, params) == 2;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, double_photon, double_photon);
+
+    /**
      * @brief Binding for a single particle electron multiplicity cut.
      * @details This function binds the single particle multiplicity cut for
      * electrons, which corresponds to the index 1 in the
@@ -971,6 +989,25 @@ namespace cuts
         return particle_multiplicity(obj, 1, 1, params) == 1;
     }
     REGISTER_CUT_SCOPE(RegistrationScope::Both, single_electron, single_electron);
+
+    /**
+     * @brief Binding for a two particle electron multiplicity cut.
+     * @details This function binds the two particle multiplicity cut for
+     * electrons, which corresponds to the index 1 in the
+     * @ref utilities::count_primaries function.
+     * @param obj the interaction to select on.
+     * @param params the parameters for the cut. In this case, this sets the
+     * kinetic energy threshold for an electron to count towards the
+     * multiplicity. Defaults to 25 MeV.
+     * @return true if the interaction has a two primary electrons.
+     */
+    template<class T>
+    bool double_electron(const T & obj, std::vector<double> params={25.0,})
+    {
+        return particle_multiplicity(obj, 2, 1, params) == 2;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, double_electron, double_electron);
+
 
     /**
      * @brief Binding for a single particle muon multiplicity cut.
