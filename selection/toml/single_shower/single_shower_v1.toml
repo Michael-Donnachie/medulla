@@ -68,6 +68,7 @@ branch = [
     { name = "proton_multiplicity_inclusive_low",       type = "both", parameters = [ "@proton_low" ]},
     { name = "muon_multiplicity_inclusive_low",         type = "both", parameters = ["@muon_low"]},
     { name = "category",                                type = "true"},
+    { name = "is_dirt",                                 type = "true"},
     #positioning
     { name = "vertex_x",            type = "both"},    
     { name = "vertex_y",            type = "both"},
@@ -213,6 +214,7 @@ branch = [
     { name = "proton_multiplicity_inclusive_low",       type = "both", parameters = [ "@proton_low" ]},
     { name = "muon_multiplicity_inclusive_low",         type = "both", parameters = ["@muon_low"]},
     { name = "category",                                type = "true"},
+    { name = "is_dirt",                                 type = "true"},
     #positioning
     { name = "vertex_x",            type = "both"},    
     { name = "vertex_y",            type = "both"},
@@ -315,6 +317,7 @@ branch = [
     { name = "proton_multiplicity_inclusive_low",       type = "both", parameters = [ "@proton_low" ]},
     { name = "muon_multiplicity_inclusive_low",         type = "both", parameters = ["@muon_low"]},
     { name = "category",                                type = "true"},
+    { name = "is_dirt",                                 type = "true"},
     #positioning
     { name = "vertex_x",            type = "both"},    
     { name = "vertex_y",            type = "both"},
@@ -417,6 +420,7 @@ branch = [
     { name = "proton_multiplicity_inclusive_low",       type = "both", parameters = [ "@proton_low" ]},
     { name = "muon_multiplicity_inclusive_low",         type = "both", parameters = ["@muon_low"]},
     { name = "category",                                type = "true"},
+    { name = "is_dirt",                                 type = "true"},
     #positioning
     { name = "vertex_x",            type = "both"},    
     { name = "vertex_y",            type = "both"},
