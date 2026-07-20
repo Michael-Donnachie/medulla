@@ -27,7 +27,8 @@ fsthresh = [
 # SBND sample
 [[sample]]
 name = "simulation"
-path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
+#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
+path = "/pnfs/sbnd/persistent/users/sc5303/gen2/mc/anl/flatcaf/*.flat.caf.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*.flat.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*.flat.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input197-reweighted.flat.caf.root"
