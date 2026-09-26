@@ -13,6 +13,7 @@
 #define ELECTRON_MASS 0.5109989461
 #define MUON_MASS 105.6583745
 #define PION_MASS 139.57039
+#define PI0_MASS 134.9768
 #define PROTON_MASS 938.2720813
 
 #include "sbnanaobj/StandardRecord/Proxy/SRProxy.h"
