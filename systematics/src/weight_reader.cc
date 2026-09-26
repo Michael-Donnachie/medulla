@@ -10,16 +10,52 @@
 #include <fstream>
 #include <iomanip>
 #include <chrono>
+#include <cstring>
 #include <sstream>
 
 #include "weight_reader.h"
 
+#include "TBranch.h"
 #include "TChain.h"
+#include "TFile.h"
+#include "TObjArray.h"
 #include "TTreeReader.h"
 #include "TTreeReaderValue.h"
 #include "TTreeReaderArray.h"
 
 #include "sbnanaobj/StandardRecord/SRTrueInteraction.h"
+#include "SRProxy/BasicTypesProxy.h"
+
+namespace
+{
+    /**
+     * @brief Recursively search a TTree for a branch with the given name.
+     * @details TTree::GetBranch() only descends a fixed number of levels into
+     * the branch hierarchy, which is not enough to reliably reach the
+     * per-neutrino branches of a structured CAF file ("rec" -> "mc" -> "mc.nu"
+     * -> "mc.nu.genie_evtrec_idx"). This helper walks the hierarchy in full.
+     * @param branches The list of branches to search.
+     * @param name The name of the branch to search for.
+     * @return The branch if it was found, nullptr otherwise.
+     */
+    TBranch * find_branch(TObjArray * branches, const char * name)
+    {
+        if(branches == nullptr)
+            return nullptr;
+        for(Int_t i(0); i < branches->GetEntriesFast(); ++i)
+        {
+            TBranch * branch = (TBranch *) branches->UncheckedAt(i);
+            if(branch == nullptr)
+                continue;
+            if(std::strcmp(branch->GetName(), name) == 0)
+                return branch;
+            TBranch * found = find_branch(branch->GetListOfBranches(), name);
+            if(found != nullptr)
+                return found;
+        }
+        return nullptr;
+    }
+}
 
 // Constructor for the WeightReader class.
 sys::WeightReader::WeightReader(const std::string & input)
@@ -28,10 +64,32 @@ sys::WeightReader::WeightReader(const std::string & input)
   idx(0),
   progress_started(false)
 {
+    // ROOT's TChain::Add() only expands a wildcard within the final path
+    // component (the filename), matched via a directory listing of a
+    // literal, non-wildcarded parent directory. A '*' in an intermediate
+    // directory component is not expanded -- TChain will try to literally
+    // open a directory with an asterisk in its name, match zero files, and
+    // fail silently. Multiple '*' within the filename component itself are
+    // fine (e.g. "*ar23p*.flat.caf.root"), so we only need to check the
+    // directory portion of the path, not the whole string.
+    size_t last_slash = input.find_last_of('/');
+    if(last_slash != std::string::npos)
+    {
+        std::string dirpart = input.substr(0, last_slash);
+        if(dirpart.find('*') != std::string::npos)
+        {
+            throw std::invalid_argument(
+                "WeightReader: A '*' wildcard in a directory component of the input "
+                "path is not supported by ROOT TChain (only the final filename "
+                "component can be a wildcard pattern). Use a '.txt' file listing "
+                "resolved paths instead."
+            );
+        }
+    }
+
     if(input.find("*") != std::string::npos)
     {
         // Input is a pattern for a set of files
-        isflat = input.find("flat") != std::string::npos;
         chain.Add(input.c_str());
     }
     else if(input.find(".txt") != std::string::npos)
@@ -40,16 +98,42 @@ sys::WeightReader::WeightReader(const std::string & input)
         std::ifstream infile(input);
         std::string line;
         while(std::getline(infile, line))
+        {
             chain.Add(line.c_str());
-        isflat = line.find("flat") != std::string::npos;
+        }
     }
     else
     {
         // Input is a single .root file
-        isflat = input.find("flat") != std::string::npos;
         chain.Add(input.c_str());
     }
-    
+
+    // Determine whether the input is a flat or structured (nested) CAF by
+    // inspecting the actual tree structure via SRProxy's GetCAFType(),
+    // rather than guessing from a "flat" substring in the file name/path.
+    // The substring heuristic silently mis-detects some ICARUS samples
+    // whose paths don't happen to contain "flat" despite being flat CAFs
+    // (or vice versa).
+    isflat = (caf::GetCAFType(&chain) == caf::kFlat);
+
+    // Determine whether the GENIE event records are available. Two independent
+    // ingredients are required: the per-neutrino index branch in the CAF record
+    // tree, and the "GenieEvtRecTree" that the index refers to. Neither is
+    // present in every CAF sample, and the two are produced independently, so
+    // both are checked here rather than assuming that one implies the other.
+    // Note that the flat and structured CAF layouts name the index branch
+    // differently, since the structured layout keeps it nested under "rec.mc".
+    chain.LoadTree(0);
+    if(chain.GetTree() != nullptr)
+    {
+        const char * idx_branch = isflat
+            ? "rec.mc.nu.genie_evtrec_idx"
+            : "mc.nu.genie_evtrec_idx";
+        has_evtrec = (find_branch(chain.GetTree()->GetListOfBranches(), idx_branch) != nullptr);
+    }
+    if(find_genie_tree() == nullptr)
+        has_evtrec = false;
+
     // Create the TTreeReader
     reader = std::make_unique<TTreeReader>(&chain);
     
@@ -72,6 +156,11 @@ sys::WeightReader::WeightReader(const std::string & input)
         chain.SetBranchAddress("rec.mc.nu.wgt.univ..length", &nuniv);
         chain.SetBranchAddress("rec.mc.nu.wgt.univ..idx", &iuniv);
         chain.SetBranchAddress("rec.mc.nu.wgt.univ", &wgts);
+
+        // GENIE event record indexing
+        if(has_evtrec)
+            chain.SetBranchAddress("rec.mc.nu.genie_evtrec_idx", evtrec_idx);
+
         chain.GetEntry(0);
     }
     else
@@ -80,6 +169,10 @@ sys::WeightReader::WeightReader(const std::string & input)
         nnu_structured = std::make_unique<TTreeReaderValue<uint64_t>>(*reader, "rec.mc.nnu");
         mc = std::make_unique<TTreeReaderArray<caf::SRTrueInteraction>>(*reader, "rec.mc.nu");
         nu_energy_structured = std::make_unique<TTreeReaderArray<Float_t>>(*reader, "rec.mc.nu.E");
+
+        // GENIE event record indexing
+        if(has_evtrec)
+            evtrec_idx_structured = std::make_unique<TTreeReaderArray<ULong64_t>>(*reader, "rec.mc.nu.genie_evtrec_idx");
     }
     reader->Next();
 }
@@ -93,6 +186,30 @@ bool sys::WeightReader::next()
     if(!reader->Next()) return false;
     chain.GetEntry(++entry);
     return true;
+}
+
+// Look up the GENIE event record tree of the current file.
+TTree * sys::WeightReader::find_genie_tree()
+{
+    TFile * file = chain.GetFile();
+    return file != nullptr ? (TTree *) file->Get("GenieEvtRecTree") : nullptr;
+}
+
+// Accessor method for the GENIE event record tree.
+TTree * sys::WeightReader::get_genie_tree()
+{
+    return has_evtrec ? find_genie_tree() : nullptr;
+}
+
+// Accessor method for the GENIE event record index.
+int64_t sys::WeightReader::get_genie_evtrec_idx(size_t idn) const
+{
+    if(!has_evtrec)
+        throw std::runtime_error("WeightReader: GENIE event records are not available in the input files.");
+    if(idn >= get_nnu())
+        throw std::out_of_range("WeightReader: Index out of range in 'get_genie_evtrec_idx()'");
+
+    return isflat ? (int64_t)evtrec_idx[idn] : (int64_t)(*evtrec_idx_structured)[idn];
 }
 
 // Set the weight group index.

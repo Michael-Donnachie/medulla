@@ -17,7 +17,8 @@
 #include "utilities.h"
 #include "framework.h"
 #include "selectors.h"
-#include "bivariables.h"
+#include "include/bivariables.h"
+#include "include/biselectors.h"
 
 /**
  * @namespace cuts
@@ -189,6 +190,42 @@ namespace cuts
     REGISTER_CUT_SCOPE(RegistrationScope::True, primary_lepton_from_antineutrino, primary_lepton_from_antineutrino);
 
     /**
+     * @brief Veto interactions whose vertex falls in the ICARUS dangling
+     * cable region.
+     * @details A region of ICARUS (x > 210.215 cm, y > 60 cm, 290 cm < z <
+     * 390 cm) contains a dangling cable that causes anomalous
+     * reconstruction. This cut rejects any interaction whose vertex falls
+     * in that region.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the vertex is outside the dangling cable region.
+     */
+    template<class T>
+    bool avoid_icarus_dangling_cable(const T & obj)
+    {
+        return !(obj.vertex[0] > 210.215 && obj.vertex[1] > 60 && (obj.vertex[2] > 290 && obj.vertex[2] < 390));
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, avoid_icarus_dangling_cable, avoid_icarus_dangling_cable);
+
+    /**
+     * @brief Veto interactions whose vertex falls in the ICARUS z-gap region.
+     * @details A region near |z| < 100 cm in ICARUS exhibits anomalously high
+     * rates of poorly-reconstructed interactions ("mystery z-gap"). This cut
+     * rejects any interaction whose vertex z-coordinate falls in the range
+     * (-100, 100) cm, which is applied on top of the standard fiducial cut
+     * when running the pi0 selection.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the vertex z-coordinate is outside (-100, 100) cm.
+     */
+    template<class T>
+    bool avoid_icarus_mystery_zgap(const T & obj)
+    {
+        return !(obj.vertex[2] > -100 && obj.vertex[2] < 100);
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, avoid_icarus_mystery_zgap, avoid_icarus_mystery_zgap);
+
+    /**
      * @brief Apply a fiducial volume cut; the interaction vertex must be
      * reconstructed within the fiducial volume.
      * @details The fiducial volume cut is applied on the reconstructed
@@ -197,6 +234,8 @@ namespace cuts
      * detector faces, a 50 cm border around the downstream (+) z face, and a
      * 30 cm border around the upstream (-) z face. The fiducial volume is
      * intended to reduce the impact of detector edge effects on the analysis.
+     * On ICARUS, the dangling cable region is additionally excluded (see
+     * avoid_icarus_dangling_cable).
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to select on.
      * @return true if the vertex is in the fiducial volume.
@@ -204,27 +243,15 @@ namespace cuts
     template<class T>
     bool fiducial_cut(const T & obj)
     {
-        return obj.is_fiducial && !(obj.vertex[0] > 210.215 && obj.vertex[1] > 60 && (obj.vertex[2] > 290 && obj.vertex[2] < 390));
+        // ICARUS gets special treatment due to the dangling cable.
+        if(context::current_detector == caf::Det_t::kICARUS)
+            return obj.is_fiducial && avoid_icarus_dangling_cable(obj);
+        
+        // Standard fiducial cut for SBND.
+        return obj.is_fiducial;
     }
     REGISTER_CUT_SCOPE(RegistrationScope::Both, fiducial_cut, fiducial_cut);
 
-    template<class T>
-    bool fiducial_cut_tmp(const T & obj)
-    {
-        return (
-            (abs(obj.vertex[0]) > 10) &&
-            (abs(obj.vertex[0]) < 190) &&
-            (obj.vertex[2] > 10) &&
-            (obj.vertex[2] < 450) &&
-            (
-                ((obj.vertex[2] > 250) && (obj.vertex[1] > -190) && (obj.vertex[1] < 100)) ||
-                ((obj.vertex[2] < 250) && (abs(obj.vertex[1]) < 190))
-            )
-
-        );
-    }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, fiducial_cut_tmp, fiducial_cut_tmp);
-    
     /**
      * @brief Apply a fiducial volume cut on photons based on their first interaction
      * point (FIP) and kinetic energy threshold.
@@ -533,6 +560,307 @@ namespace cuts
     template<class T>
     bool containment_cut(const T & obj) { return obj.is_contained; }
     REGISTER_CUT_SCOPE(RegistrationScope::Both, containment_cut, containment_cut);
+
+    /**
+     * @brief Apply a user-defined containment cut on the entire interaction.
+     * @details The user-defined containment cut is applied on the entire
+     * interaction. It checks if all particles are contained within a specified
+     * distance from the detector edges. The distance is provided as a
+     * parameter.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a vector containing a single parameter for the containment
+     * distance.
+     * @return true if the interaction is contained within the specified
+     * distance from the detector edges.
+     */
+    template<class T>
+    bool user_containment_cut(const T & obj, std::vector<double> params={})
+    {
+        if(params.size() != 1)
+            throw std::invalid_argument("user_containment_cut requires a single parameter for the containment distance.");
+
+        if(!obj.is_contained)
+            return false; // Always more strict than the upstream SPINE cut.
+
+        if(context::current_detector == caf::Det_t::kSBND)
+        {
+            // Bounds are [-200, 200], [-200, 200], [0, 500]
+            for(const auto & p : obj.particles)
+            {
+                if(!std::isnan(pvars::start_x(p)) && !std::isnan(pvars::end_x(p)))
+                {
+                    if(pvars::start_x(p) < -200 + params[0] || pvars::start_x(p) > 200 - params[0]
+                    || pvars::end_x(p) < -200 + params[0] || pvars::end_x(p) > 200 - params[0])
+                        return false;
+                }
+                if(!std::isnan(pvars::start_y(p)) && !std::isnan(pvars::end_y(p)))
+                {
+                    if(pvars::start_y(p) < -200 + params[0] || pvars::start_y(p) > 200 - params[0]
+                    || pvars::end_y(p) < -200 + params[0] || pvars::end_y(p) > 200 - params[0])
+                        return false;
+                }
+                if(!std::isnan(pvars::start_z(p)) && !std::isnan(pvars::end_z(p)))
+                {
+                    if(pvars::start_z(p) < 0 + params[0] || pvars::start_z(p) > 500 - params[0]
+                    || pvars::end_z(p) < 0 + params[0] || pvars::end_z(p) > 500 - params[0])
+                        return false;
+                }
+            }
+        }
+        else if(context::current_detector == caf::Det_t::kICARUS)
+        {
+            // Bounds are [61.12, 359.45], [-181.71, 130.59], [-894.95, 894.95]
+            // Two cryostats, one at positive x and one at negative x.
+            for(const auto & p : obj.particles)
+            {
+                if(!std::isnan(pvars::start_x(p)) && !std::isnan(pvars::end_x(p)))
+                {
+                    if((pvars::start_x(p) < 61.12 + params[0] || pvars::start_x(p) > 359.45 - params[0]
+                    || pvars::end_x(p) < 61.12 + params[0] || pvars::end_x(p) > 359.45 - params[0])
+                    && (pvars::start_x(p) < -359.45 + params[0] || pvars::start_x(p) > -61.12 - params[0]
+                    || pvars::end_x(p) < -359.45 + params[0] || pvars::end_x(p) > -61.12 - params[0]))
+                        return false;
+                }
+                if(!std::isnan(pvars::start_y(p)) && !std::isnan(pvars::end_y(p)))
+                {
+                    if(pvars::start_y(p) < -181.71 + params[0] || pvars::start_y(p) > 130.59 - params[0]
+                    || pvars::end_y(p) < -181.71 + params[0] || pvars::end_y(p) > 130.59 - params[0])
+                        return false;
+                }
+                if(!std::isnan(pvars::start_z(p)) && !std::isnan(pvars::end_z(p)))
+                {
+                    if(pvars::start_z(p) < -894.95 + params[0] || pvars::start_z(p) > 894.95 - params[0]
+                    || pvars::end_z(p) < -894.95 + params[0] || pvars::end_z(p) > 894.95 - params[0])
+                        return false;
+                }
+            }
+        }
+        // Else, return true.
+        return true;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, user_containment_cut, user_containment_cut);
+
+    /**
+     * @brief Apply a user-defined containment cut on the entire interaction,
+     * excluding the EE TPC.
+     * @details This applies user_containment_cut and then additionally
+     * rejects interactions with particles whose start or end point falls in
+     * the EE TPC (the ICARUS TPC pair at negative x, beyond the cathode at
+     * x = -210.215) -- i.e. the region between the cathode and the far wall
+     * (-359.45) that user_containment_cut alone still allows. On SBND, which
+     * has no cathode split of this kind, this is equivalent to
+     * user_containment_cut.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a vector containing a single parameter for the containment
+     * distance.
+     * @return true if the interaction is contained within the specified
+     * distance from the detector edges, excluding the EE TPC.
+     */
+    template<class T>
+    bool user_containment_cut_filterEE(const T & obj, std::vector<double> params={})
+    {
+        if(params.size() != 1)
+            throw std::invalid_argument("user_containment_cut_filterEE requires a single parameter for the containment distance.");
+
+        if(!obj.is_contained)
+            return false; // Always more strict than the upstream SPINE cut.
+
+        if(context::current_detector == caf::Det_t::kSBND)
+        {
+            // Not relevant for SBND
+            return user_containment_cut(obj, params);
+        }
+        else if(context::current_detector == caf::Det_t::kICARUS)
+        {
+            // Start from the standard containment bounds, then additionally
+            // reject particles whose start or end point falls in the EE TPC:
+            // the region between the cathode (x = -210.215) and the far
+            // wall (x = -359.45) that user_containment_cut alone still
+            // allows.
+            if(!user_containment_cut(obj, params))
+                return false;
+
+            for(const auto & p : obj.particles)
+            {
+                if(!std::isnan(pvars::start_x(p)) && !std::isnan(pvars::end_x(p)))
+                {
+                    if((pvars::start_x(p) < 0 && pvars::start_x(p) < -210.215 + params[0])
+                    || (pvars::end_x(p) < 0 && pvars::end_x(p) < -210.215 + params[0]))
+                        return false;
+                }
+            }
+        }
+        // Else, return true.
+        return true;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, user_containment_cut_filterEE, user_containment_cut_filterEE);
+
+    /**
+     * @brief Apply a cut to select cathode-crossing interactions.
+     * @details This cut is intended to be used in analyses that wish to select
+     * (or deselect) interactions that cross the cathode. The cathode-crossing 
+     * status is determined by checking the sign of the product of particle
+     * extrema x-positions for all particles in the interaction.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the interaction crosses the cathode.
+    */
+    template<class T>
+    bool cathode_crosser(const T & obj)
+    {
+        for(const auto & p : obj.particles)
+        {
+            if(!std::isnan(pvars::start_x(p)) && !std::isnan(pvars::end_x(p)))
+            {
+                if(context::current_detector == caf::Det_t::kSBND)
+                {
+                    if(pvars::start_x(p) * pvars::end_x(p) < 0)
+                        return true;
+                }
+                else if(context::current_detector == caf::Det_t::kICARUS)
+                {
+                    if((pvars::start_x(p) < 0 && (pvars::start_x(p) + 210.215) * (pvars::end_x(p) + 210.215) < 0)
+                    || (pvars::start_x(p) > 0 && (pvars::start_x(p) - 210.215) * (pvars::end_x(p) - 210.215) < 0))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, cathode_crosser, cathode_crosser);
+
+    /**
+     * @brief Apply a cut to fiducialize the region around the cathode.
+     * @details This cut is intended to be used in analyses that wish to select
+     * (or deselect) interactions that occur near the cathode. The
+     * fiducialization is applied by checking the x-position of the interaction
+     * vertex relative to the cathode position.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a vector optionally containing a single parameter for the
+     * fiducialization distance from the cathode in cm. Defaults to 5 cm when
+     * not provided.
+     * @return true if the interaction is fiducialized.
+     */
+    template<class T>
+    bool fiducialize_cathode(const T & obj, std::vector<double> params={})
+    {
+        double margin = params.empty() ? 5.0 : params[0];
+        if(context::current_detector == caf::Det_t::kSBND)
+        {
+            // Apply a cut to fiducialize the given distance around the
+            // cathode of SBND.
+            return std::abs(obj.vertex[0]) > margin;
+        }
+        else if(context::current_detector == caf::Det_t::kICARUS)
+        {
+            // Apply a cut to fiducialize the given distance around the
+            // cathode of ICARUS.
+            return std::abs(std::abs(obj.vertex[0]) - 210.215) > margin;
+        }
+        else
+        {
+            // If the detector is not recognized, do not apply any cut.
+            return true;
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, fiducialize_cathode, fiducialize_cathode);
+
+    template<class T>
+    bool fiducial_cut_osc(const T & obj)
+    {
+        // Apply a cut to within 10 cm of the detector edge in x and y,
+        // 15 cm in upstream z, and 100 cm in downstream z.
+        if(context::current_detector == caf::Det_t::kSBND)
+        {
+            // Just the regular fiducial cut for SBND
+            return std::abs(obj.vertex[0]) < 190.0
+                && std::abs(obj.vertex[1]) < 190.0
+                && obj.vertex[2] > 10.0 && obj.vertex[2] < 450.0;
+
+        }
+        else if(context::current_detector == caf::Det_t::kICARUS)
+        {
+            // Regular fiducial cut for ICARUS, plus the dangling cable cut.
+            return std::abs(obj.vertex[0]) > 61.12 + 10.0 && std::abs(obj.vertex[0]) < 359.45 - 10.0
+                && obj.vertex[1] > -181.71 + 10.0 && obj.vertex[1] < 130.59 - 10.0
+                && obj.vertex[2] > -894.95 + 10.0 && obj.vertex[2] < 894.95 - 50.0
+                && avoid_icarus_dangling_cable(obj);
+        }
+        // Else, return true.
+        return true;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, fiducial_cut_osc, fiducial_cut_osc);
+
+    /**
+     * @brief Apply a cut to veto the high-y, high-z region of SBND.
+     * @details This cut is intended to be used in analyses that wish to veto
+     * the high-y, high-z region of SBND. The high-y, high-z region is the
+     * region in positive x where y > 100 cm and z > 250 cm. This region is the
+     * subject of some unusual detector effect that hasn't been fully diagnosed
+     * at the current date. We apply a cut to veto any activity (has any
+     * particle terminating in this region) in this region to mitigate the
+     * impact of this effect on analyses.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if no particles in the interaction start or end in the
+     * high-y, high-z region.
+    */
+    template<class T>
+    bool veto_sbnd_highy_highz(const T & obj)
+    {
+        if(context::current_detector == caf::Det_t::kSBND)
+        {
+            // Apply a cut to veto the high-y, high-z region of SBND.
+            bool in_veto_region = false;
+            for(const auto & p : obj.particles)
+            {
+                if((pvars::start_y(p) > 100 && pvars::start_z(p) > 250 && pvars::start_x(p) > 0)
+                    || (pvars::end_y(p) > 100 && pvars::end_z(p) > 250 && pvars::end_x(p) > 0))
+                {
+                    in_veto_region = true;
+                    break;
+                }
+            }
+            return !in_veto_region;
+        }
+        else
+        {
+            // If the detector is not recognized, do not apply any cut.
+            return true;
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, veto_sbnd_highy_highz, veto_sbnd_highy_highz);
+
+    template<class T>
+    bool neutrino2026_veto(const T & obj)
+    {
+        if(context::current_detector == caf::Det_t::kSBND)
+        {
+            // For SBND, we apply the fiducialize_cathode cut, the
+            // veto_sbnd_highy_highz cut, and the cathode-crossing cut to veto
+            // the regions of the detector that are not well-modeled and not
+            // covered by a validated systematic uncertainty. This is intended
+            // to be used for Neutrino 2026.
+            return fiducialize_cathode(obj) && veto_sbnd_highy_highz(obj) && !cathode_crosser(obj);
+        }
+        else if(context::current_detector == caf::Det_t::kICARUS)
+        {
+            // For ICARUS, we apply the fiducialize_cathode cut to veto the
+            // region around the cathode that is not well-modeled and not
+            // covered by a validated systematic uncertainty. This is intended
+            // to be used for Neutrino 2026.
+            return fiducialize_cathode(obj);
+        }
+        else
+        {
+            // If the detector is not recognized, do not apply any cut.
+            return true;
+        }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, neutrino2026_veto, neutrino2026_veto);
 
     /**
      * @brief Apply a cut to reject events that have a non-electron particle that
@@ -972,6 +1300,37 @@ namespace cuts
     }
     REGISTER_CUT_SCOPE(RegistrationScope::Both, double_photon, double_photon);
 
+
+    /**
+     * @brief Require the diphoton invariant mass to lie within a specified window.
+     * @details Selects the best photon pair using the pi0_photon_pair biselector,
+     * then computes the diphoton invariant mass as sqrt(2 ke0 ke1 (1 - cos theta)),
+     * where the opening angle is determined from the vertex-to-shower-start unit
+     * vectors for reconstructed particles and from momentum unit vectors for true
+     * particles. The interaction fails the cut if no valid photon pair exists or
+     * if the invariant mass falls outside [params[0], params[1]).
+     * The KE estimator respects the current pvars::calofn<T> setting.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params params[0] lower mass bound (MeV), params[1] upper mass bound (MeV).
+     *               Defaults to [60, 300) MeV.
+     * @return true if a valid photon pair exists and its invariant mass is in [params[0], params[1]).
+     */
+    template<class T>
+    bool valid_pi0_mass_cut(const T & obj, std::vector<double> params={60.0, 300.0})
+    {
+        auto [i0, i1] = biselectors::pi0_photon_pair(obj);
+        if(i0 == kNoMatch || i1 == kNoMatch) return false;
+        const auto & p0 = obj.particles[i0];
+        const auto & p1 = obj.particles[i1];
+        double vx = obj.vertex[0], vy = obj.vertex[1], vz = obj.vertex[2];
+        double ke0 = pvars::calo_ke(p0), ke1 = pvars::calo_ke(p1);
+        double ct   = bvars::pi0_opening_costheta_impl(p0, p1, vx, vy, vz);
+        double mass = std::sqrt(2.0 * ke0 * ke1 * (1.0 - ct));
+        return mass >= params[0] && mass < params[1];
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, valid_pi0_mass_cut, valid_pi0_mass_cut);
+
     /**
      * @brief Binding for a single particle electron multiplicity cut.
      * @details This function binds the single particle multiplicity cut for
@@ -1351,5 +1710,207 @@ namespace cuts
     }
 
     REGISTER_CUT_SCOPE(RegistrationScope::Reco, michel_attached_muon, michel_attached_muon);    
+
+    /**
+    * @brief Apply a cut on particle multiplicity with configurable species and count.
+    * @details This function applies a cut based on the multiplicity of a specific
+    * particle species. The particle species and desired multiplicity are specified
+    * via the parameters vector. This allows for flexible multiplicity cuts without
+    * needing to define separate functions for each combination.
+    * @tparam T the type of interaction (true or reco).
+    * @param obj the interaction to select on.
+    * @param params the parameters for the cut:
+    *   - params[0]: minimum desired multiplicity (converted to size_t)
+    *   - params[1]: particle species index (0=photon, 1=electron, 2=muon, 3=pion, 4=proton)
+    *   - params[2]: kinetic energy threshold in MeV (optional, defaults to 0.0)
+    * @return true if the interaction has exactly the specified multiplicity of the
+    * specified particle species above the energy threshold.
+    */
+    template<class T>
+    bool has_particle_multiplicity(const T & obj, std::vector<double> params={1.0, 2.0, 0.0})
+    {
+        if(params.size() < 2)
+        {
+            throw std::runtime_error("has_particle_multiplicity requires at least 2 parameters: [multiplicity, particle_species, (optional) ke_threshold]");
+        }
+        
+        size_t desired_mult = static_cast<size_t>(params[0]);
+        size_t particle_species = static_cast<size_t>(params[1]);
+        double ke_threshold = (params.size() >= 3) ? params[2] : 0.0;
+        
+        std::vector<double> threshold_params = {ke_threshold};
+        size_t actual_mult = particle_multiplicity(obj, 1, particle_species, threshold_params);
+        
+        return actual_mult >= desired_mult;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, has_particle_multiplicity, has_particle_multiplicity);
+
+    /**
+     * @brief Apply a cut on the number of identified primary tracks.
+     * @details Counts primary particles with a semantic type of 1 (track).
+     * This is a PID-species-agnostic analogue of @ref has_particle_multiplicity,
+     * intended for pre-selections that study the impact of PID-based cuts
+     * downstream. No requirement is made on a particle's proximity to the
+     * interaction vertex.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params the parameters for the cut:
+     *   - params[0]: minimum desired track count (default 2.0)
+     * @return true if the interaction has at least params[0] identified
+     * primary tracks.
+     */
+    template<class T>
+    bool track_multiplicity(const T & obj, std::vector<double> params={2.0})
+    {
+        size_t desired_mult = static_cast<size_t>(params[0]);
+
+        size_t count(0);
+        for(size_t i(0); i < obj.particles.size(); ++i)
+        {
+            const auto & p = obj.particles[i];
+            if(pvars::semantic_type(p) != 1 || !pvars::primary_classification(p))
+                continue;
+            ++count;
+        }
+        return count >= desired_mult;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, track_multiplicity, track_multiplicity);
+
+    /**
+     * @brief Cut to select interactions with an identified longest track.
+     * @details Checks that @ref selectors::longest_track finds a valid
+     * particle (a particle with a semantic type of 1, i.e. a track).
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the interaction has an identified longest track.
+     */
+    template<class T>
+    bool is_longest_track(const T & obj)
+    {
+        return selectors::longest_track(obj) != kNoMatch;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, is_longest_track, is_longest_track);
+
+    /**
+     * @brief Cut to select interactions with an identified second longest track.
+     * @details Checks that @ref selectors::second_longest_track finds a
+     * valid particle (a particle with a semantic type of 1, i.e. a track).
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the interaction has an identified second longest track.
+     */
+    template<class T>
+    bool is_second_longest_track(const T & obj)
+    {
+        return selectors::second_longest_track(obj) != kNoMatch;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, is_second_longest_track, is_second_longest_track);
+
+    /**
+     * @brief Cut to select interactions with an identified third longest track.
+     * @details Checks that @ref selectors::third_longest_track finds a
+     * valid particle (a particle with a semantic type of 1, i.e. a track).
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the interaction has an identified third longest track.
+     */
+    template<class T>
+    bool is_third_longest_track(const T & obj)
+    {
+        return selectors::third_longest_track(obj) != kNoMatch;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, is_third_longest_track, is_third_longest_track);
+
+    /**
+     * @brief Cut to select longest track length below a threshold.
+     * @details This function applies a cut to select interactions with a
+     * longest track length below a specified threshold.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the interaction's longest track length is below the threshold.
+    */
+    template<class T>
+    bool track_length(const T & obj, std::vector<double> params={25.0})
+    {
+
+        if(params.size() < 1)
+        {
+            throw std::runtime_error("track_length requires at least 1 parameter: [threshold]");
+        }
+
+        float maxLen = -1;
+        size_t longest_track_idx = kNoMatch;
+        for (size_t i = 0; i < obj.particles.size(); ++i) {
+            const auto & p = obj.particles[i];
+            if (pvars::semantic_type(p) != 1) continue;
+            if (pvars::length(p) > maxLen) {
+                maxLen = pvars::length(p);
+                longest_track_idx = i;
+            }
+        }
+    
+        if(longest_track_idx == kNoMatch) return true;
+        
+        return pvars::length(obj.particles[longest_track_idx]) < params[0];
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, track_length, track_length);
+
+    /**
+     * @brief Cut to select interactions with leading electron dE/dx below a threshold.
+     * @details This function applies a cut to select interactions with a
+     * leading electron dE/dx below a specified threshold.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the interaction has a leading electron with dE/dx below the threshold.
+    */
+    template<class T>
+    bool particle_dedx(const T & obj, std::vector<double> params={0.0,})
+    {   
+        size_t i = selectors::leading_electron(obj);
+        if (i == kNoMatch) return false;
+        const auto & p = obj.particles[i];
+        bool pass = (double)p.start_dedx < params[0] && (double)p.start_dedx >= 0;
+        return pass;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Reco, particle_dedx, particle_dedx);
+
+    /**
+     * @brief Cut to select interactions with a leading electron vertex distance below a threshold.
+     * @details This function applies a cut to select interactions with a
+     * leading electron vertex distance below a specified threshold.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @return true if the interaction has a leading electron with vertex distance below the threshold.
+    */
+    template<class T>
+    bool vertex_distance_cut(const T & obj, std::vector<double> params={0.0,})
+    {   
+        size_t i = selectors::leading_electron(obj);
+        if (i == kNoMatch) return false;
+        const auto & p = obj.particles[i];
+        return p.vertex_distance >= 0 ? p.vertex_distance < params[0] : false;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Reco, vertex_distance_cut, vertex_distance_cut);
+
+    /**
+     * @brief Cut to select interactions with a specific neutrino PDG code.
+     * @details This function applies a cut to select interactions with a
+     * specific neutrino PDG code.
+     * @tparam T the type of interaction (true).
+     * @param obj the interaction to select on.
+     * @return true if the interaction has a neutrino matching the given PDG code.
+    */
+    template<class T>
+    bool neutrino_pdg(const T & obj, std::vector<double> params={12.0})
+    {
+        for (const auto & pdg : params)
+        {
+            if (obj.pdg_code == pdg)
+                return true;
+        }
+        return false;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::True, neutrino_pdg, neutrino_pdg);
+
 }
 #endif

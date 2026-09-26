@@ -10,8 +10,9 @@ find_package(sbnanaobj)
 
 
 add_library(weight_reader SHARED src/weight_reader.cc)
-target_link_libraries(weight_reader PRIVATE ${ROOT_LIBRARIES} shared)
-target_include_directories(weight_reader PRIVATE include/ ${ROOT_INCLUDE_DIRS} ${SBNANAOBJ_INC})
+target_link_directories(weight_reader PRIVATE ${SBNANAOBJ_LIB})
+target_link_libraries(weight_reader PRIVATE ${ROOT_LIBRARIES} shared sbnanaobj_StandardRecordProxy)
+target_include_directories(weight_reader PRIVATE include/ ${ROOT_INCLUDE_DIRS} ${SBNANAOBJ_INC} ${SRPROXY_INC})
 
 # Library for generic systematics
 add_library(systematics SHARED src/systematic.cc)
@@ -23,9 +24,14 @@ add_library(detsys SHARED src/detsys.cc)
 target_link_libraries(detsys PRIVATE ${ROOT_LIBRARIES} shared)
 target_include_directories(detsys PRIVATE include/ ${ROOT_INCLUDE_DIRS} ${SBNANAOBJ_INC})
 
+# Library for copying GENIE event records
+add_library(genie_record SHARED src/genie_record.cc)
+target_link_libraries(genie_record PRIVATE ${ROOT_LIBRARIES} shared)
+target_include_directories(genie_record PRIVATE include/ ${ROOT_INCLUDE_DIRS})
+
 # Library for tree-handling code
 add_library(trees SHARED src/trees.cc)
-target_link_libraries(trees PRIVATE ${ROOT_LIBRARIES} shared weight_reader systematics detsys)
+target_link_libraries(trees PRIVATE ${ROOT_LIBRARIES} shared weight_reader systematics detsys genie_record)
 target_include_directories(trees PRIVATE include/ ${ROOT_INCLUDE_DIRS} ${SBNANAOBJ_INC})
 
 # Library for CAFAna
