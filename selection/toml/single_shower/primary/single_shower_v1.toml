@@ -9,11 +9,11 @@ pion_threshold = 130.0
 pion_low = 1.0
 proton_threshold = 25.0
 proton_low = 1.0
+containment_margin = 1.0
 
 
 [general]
-output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/tesing_g1_again"
-#output = "/pnfs/sbnd/scratch/users/mdonnach/single_shower_1e20_reweighted_output/single_shower_v2_rewighted_1e20"
+output = "/exp/sbnd/data/users/mdonnach/medulla_produce/single_photon_v2/systematics_run/output.root"
 primfn = "default_primary_classification"
 pidfn = "default_pid"
 fsthresh = [
@@ -24,20 +24,13 @@ fsthresh = [
     "@proton_threshold",
 ]
 
-# SBND sample
-[[sample]]
-name = "simulation"
-#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
-#path = "/pnfs/sbnd/persistent/users/sc5303/gen2/mc/anl/flatcaf/*.flat.caf.root"
-#path = "/pnfs/sbnd/scratch/users/mueller/test_gen2/flatcaf/*.flat.caf.root"
-#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*.flat.root"
-#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*.flat.root"
-#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input197-reweighted.flat.caf.root"
-#path = "root://fndca1.fnal.gov:1094//pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
-#path = "/pnfs/sbnd/scratch/users/mueller/MCP2025B/gen1_updated_training/03162026/input*.flat.root"
-path = "/pnfs/sbn/persistent/users/mueller/osc/sbnd/mc_MCP2025B_5e18_v10_06_00_09_prodgenie_corsika_proton_rockbox_sbnd_CV_caf_sbnd/*/*/*ar23p.flat.caf.root"
-ismc = true
-disable = false # Optional: default = falses
+[[include_samples]]
+file = "common/osc.toml"
+keys = [
+    "sbnd_ar23p_mc5e18",
+    "sbnd_ar23p_dirt",
+    "sbnd_intime_mc5e18",
+]
 
 
 [[tree]]  #True single photon selection
@@ -50,7 +43,7 @@ cut = [
     { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",              type = "true",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
-    { name = "contained_fip_cut_depot",                 type = "both",  parameters = [ "@containment_margin" ]},    
+    { name = "contained_fip_cut_depot",                 type = "true",  parameters = [ "@containment_margin" ]},    
     { name = "neutrino",                                type = "true"}
 ]
 branch = [
@@ -59,6 +52,7 @@ branch = [
     { name = "interaction_mode",               type = "mctruth" },
     { name = "interaction_type",               type = "mctruth" },
     { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },
 
     #interaction
     { name = "interaction_id",                          type = "both"},
@@ -213,6 +207,7 @@ branch = [
     { name = "interaction_mode",               type = "mctruth" },
     { name = "interaction_type",               type = "mctruth" },
     { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },
 
     #interaction
     { name = "interaction_id",                          type = "both"},
@@ -235,10 +230,10 @@ branch = [
     { name = "is_dirt" ,                                type = "true"},
     { name = "contained_fip_cut_depot",                 type = "both", parameters = [ "@containment_margin" ]},    
     #positioning
-    { name = "vertex_x",            type = "both"},    
-    { name = "vertex_y",            type = "both"},
-    { name = "vertex_z",            type = "both"},
-    { name = "shower_opening_angle",type = "both"},
+    { name = "vertex_x",                                type = "both"},    
+    { name = "vertex_y",                                type = "both"},
+    { name = "vertex_z",                                type = "both"},
+    { name = "shower_opening_angle",                    type = "both"},
 
     #electron
     { name = "ke",                  type = "both_particle",     selector = "leading_electron"},
@@ -316,7 +311,7 @@ cut = [
     { name = "no_electrons_inclusive",                  type = "reco",  parameters = [ "@electron_threshold"]},
     { name = "no_charged_pions_inclusive",              type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "reco",  parameters = [ "@muon_threshold" ]},
-    { name = "contained_fip_cut_depot",                 type = "both", parameters = [ "@containment_margin" ]},    
+    { name = "contained_fip_cut_depot",                 type = "reco", parameters = [ "@containment_margin" ]},    
     { name = "valid_flashmatch",                        type = "reco"}
 ]
 branch = [
@@ -325,6 +320,7 @@ branch = [
     { name = "interaction_mode",               type = "mctruth" },
     { name = "interaction_type",               type = "mctruth" },
     { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },
 
     #interaction
     { name = "interaction_id",                          type = "both"},
@@ -346,10 +342,10 @@ branch = [
     { name = "neutrino",                                type = "true"},
     { name = "is_dirt" ,                                type = "true"},
     { name = "contained_fip_cut_depot",                 type = "both", parameters = [ "@containment_margin" ]},    
-    { name = "vertex_x",            type = "both"},    
-    { name = "vertex_y",            type = "both"},
-    { name = "vertex_z",            type = "both"},
-    { name = "shower_opening_angle",type = "both"},
+    { name = "vertex_x",                                type = "both"},    
+    { name = "vertex_y",                                type = "both"},
+    { name = "vertex_z",                                type = "both"},
+    { name = "shower_opening_angle",                    type = "both"},
     #electron
     { name = "ke",                  type = "both_particle",     selector = "leading_electron"},
 
@@ -419,31 +415,31 @@ branch = [
 
 [[category]] #0 single photon signal with containment, no other particle
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
-    { name = "no_electrons_inclusive",                       parameters = [ "@electron_threshold" ]},
-    { name = "no_charged_pions_inclusive",                   parameters = [ "@pion_threshold" ]},
+    { name = "single_photon_deposited_cut",                 parameters = [ "@photon_threshold"  ] },
+    { name = "no_electrons_inclusive",                      parameters = [ "@electron_threshold" ]},
+    { name = "no_charged_pions_inclusive",                  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           parameters = [ "@muon_threshold" ]},
     { name = "neutrino"},
     { name = "!is_dirt" },
-    { name = "contained_fip_cut_depot",                       type = "both", parameters = [ "@containment_margin" ]},    
+    { name = "contained_fip_cut_depot",                     parameters = [ "@containment_margin" ]},    
 
 ]
 
 [[category]] #1 single photon signal uncontained, no other particle
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
-    { name = "no_electrons_inclusive",                       parameters = [ "@electron_threshold" ]},
-    { name = "no_charged_pions_inclusive",                   parameters = [ "@pion_threshold" ]},
+    { name = "single_photon_deposited_cut",                 parameters = [ "@photon_threshold"  ] },
+    { name = "no_electrons_inclusive",                      parameters = [ "@electron_threshold" ]},
+    { name = "no_charged_pions_inclusive",                  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           parameters = [ "@muon_threshold" ]},
     { name = "neutrino"},
-    { name = "!contained_fip_cut_depot",                       type = "both", parameters = [ "@containment_margin" ]},    
+    { name = "!contained_fip_cut_depot",                    parameters = [ "@containment_margin" ]},    
 ]
 
 [[category]] #2 single photon signal from dirt, no other particle
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
-    { name = "no_electrons_inclusive",                       parameters = [ "@electron_threshold" ]},
-    { name = "no_charged_pions_inclusive",                   parameters = [ "@pion_threshold" ]},
+    { name = "single_photon_deposited_cut",                 parameters = [ "@photon_threshold"  ] },
+    { name = "no_electrons_inclusive",                      parameters = [ "@electron_threshold" ]},
+    { name = "no_charged_pions_inclusive",                  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           parameters = [ "@muon_threshold" ]},
     { name = "is_dirt" },
     { name = "neutrino"}
@@ -455,13 +451,13 @@ cuts = [
     { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
     { name = "neutrino"},
     { name = "!is_dirt" },
-    { name = "contained_fip_cut_depot",                       type = "both", parameters = [ "@containment_margin" ]},    
+    { name = "contained_fip_cut_depot",                 parameters = [ "@containment_margin" ]},    
 ]
 
 [[category]] #4 single photon uncontained + others not dirt
 cuts = [
     { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
-    { name = "!contained_fip_cut_depot",                       type = "both", parameters = [ "@containment_margin" ]},    
+    { name = "!contained_fip_cut_depot",                parameters = [ "@containment_margin" ]},    
     { name = "neutrino"}
 ]
 
@@ -476,13 +472,13 @@ cuts = [
 cuts = [
     { name = "neutrino"},
     { name = "!is_dirt" },
-    { name = "contained_fip_cut_depot",                       type = "both", parameters = [ "@containment_margin" ]},    
+    { name = "contained_fip_cut_depot",                 parameters = [ "@containment_margin" ]},    
 ]
 
 [[category]] #7 Neutrino not contained
 cuts = [
     { name = "neutrino"},
-    { name = "!contained_fip_cut_depot",                       type = "both", parameters = [ "@containment_margin" ]},    
+    { name = "!contained_fip_cut_depot",                parameters = [ "@containment_margin" ]},    
 ]
 
 [[category]] #8 Neutrino is dirt

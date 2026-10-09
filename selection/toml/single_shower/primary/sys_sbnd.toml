@@ -12,12 +12,12 @@ weight_clip = [0.0, 10.0]
 store_genie_evt_rec = true
 
 [[sysvar]]
-name = "reco_visible_energy"
-bins = [25, 0, 3]
+name = "reco_leading_depot_shower_ke"
+bins = [20, 0, 1000]   # MeV; adjust to your range
 
 [[sysvar]]
-name = "reco_leading_photon_ke"   # exact branch name in your selected tree
-bins = [20, 0, 1000]              # MeV
+name = "true_leading_depot_shower_ke"
+bins = [20, 0, 1000]
 
 
 [[sys]]
