@@ -89,7 +89,10 @@ namespace pcuts
      * at least the specified margin on all sides.
      */
     template<class T>
-    bool fip_contained(const T & p, std::vector<double> params={3.0}) {
+    bool fip_contained(const T & p,std::vector<double> params) {
+        if(params.size() != 1)
+            throw std::invalid_argument("fip_contained requires exactly one parameter: the inset margin (cm).");
+
         if(p.start_point[0] > SBND_XMIN + params[0] && p.start_point[0] < SBND_XMAX-params[0] && p.start_point[1] > SBND_YMIN+params[0] && p.start_point[1] < SBND_YMAX-params[0]
                                 && p.start_point[2] > SBND_ZMIN + params[0] && p.start_point[2] < SBND_ZMAX - params[0])
             return true;

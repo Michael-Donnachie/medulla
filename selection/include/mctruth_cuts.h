@@ -111,6 +111,27 @@ namespace mctruth
     REGISTER_CUT_SCOPE(RegistrationScope::MCTruth, no_neutral_pions, no_neutral_pions);
 
     /**
+     * @brief Cut for one true final state neutral pions.
+     * @details Applied at the GENIE generator level using obj.prim. Only
+     * primary particles (start_process == 0) are considered.
+     * @tparam T the type of the object to apply the cut on.
+     * @param obj the SRTrueInteraction to apply the cut on.
+     * @return true if no neutral pions are present.
+     */
+    template<typename T>
+    bool yes_neutral_pions(const T & obj)
+    {
+        for(const auto & p : obj.prim)
+        {
+            if(p.start_process != 0) continue;
+            if(p.pdg == 111)
+                return true;
+        }
+        return false;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::MCTruth, yes_neutral_pions, yes_neutral_pions );
+
+    /**
      * @brief Cut for zero true final state photons above threshold.
      * @details Applied at the GENIE generator level using obj.prim. The
      * energy is computed from the GENIE genE field.

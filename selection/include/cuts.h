@@ -270,8 +270,9 @@ namespace cuts
      * @return true if the photons fip is within fiducial volume
      */
     template<class T>
-    bool contained_fip_cut(const T & obj){
-        std::vector<double> params={1.0};
+    bool contained_fip_cut(const T & obj, std::vector<double> params){
+        if(params.size() != 1)
+            throw std::invalid_argument("contained_fip_cut requires exactly one parameter: the inset margin (cm).");
         size_t lead_phot_index = selectors::leading_photon(obj);
         size_t sub_lead_phot_index = selectors::sub_leading_photon(obj);
         // want it to be contained whenever there are no photons or the photons are too low of an energy 
@@ -340,8 +341,9 @@ namespace cuts
      * @return true if the photons fip is within fiducial volume
      */
     template<class T>
-    bool contained_fip_cut_depot(const T & obj){
-        std::vector<double> params={1.0};
+    bool contained_fip_cut_depot(const T & obj, std::vector<double> params){
+        if(params.size() != 1)
+            throw std::invalid_argument("contained_fip_cut_depot requires exactly one parameter: the inset margin (cm).");
         size_t lead_phot_index = selectors::leading_depot_photon(obj);
         size_t sub_lead_phot_index = selectors::sub_leading_depot_photon(obj);
         // want it to be contained whenever there are no photons or the photons are too low of an energy 
@@ -409,8 +411,9 @@ namespace cuts
      * @return true if the showers fip is within fiducial volume
      */
     template<class T>
-    bool contained_shower_fip_cut_depot(const T & obj){
-        std::vector<double> params={1.0};
+    bool contained_shower_fip_cut_depot(const T & obj, std::vector<double> params){
+        if(params.size() != 1)
+            throw std::invalid_argument("contained_shower_fip_cut_depot requires exactly one parameter: the inset margin (cm).");
         size_t lead_shower_index = selectors::leading_depot_shower(obj);
         size_t sub_lead_shower_index = selectors::sub_leading_depot_shower(obj);
 
@@ -476,8 +479,9 @@ namespace cuts
      * @return true if the showers fip is within fiducial volume
      */
     template<class T>
-    bool contained_shower_fip_cut(const T & obj){
-        std::vector<double> params={1.0};
+    bool contained_shower_fip_cut(const T & obj, std::vector<double> params){
+        if(params.size() != 1)
+            throw std::invalid_argument("contained_shower_fip_cut requires exactly one parameter: the inset margin (cm).");
         size_t lead_shower_index = selectors::leading_shower(obj);
         size_t sub_lead_shower_index = selectors::sub_leading_shower(obj);
 

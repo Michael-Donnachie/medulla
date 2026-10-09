@@ -60,6 +60,12 @@ ValueT Registry<ValueT>::get(const std::string & name)
     return registry_[name];
 }
 
+template<class S>
+inline bool valid_nu_id(const S & sr, int id)
+{
+    return id >= 0 && static_cast<size_t>(id) < sr.mc.nu.size();
+}
+
 // Build a single SpillMultiVar for a single branch variable.
 NamedSpillMultiVar construct(const std::vector<cfg::ConfigurationTable> & cuts,
                              const cfg::ConfigurationTable & var,
@@ -791,23 +797,23 @@ ana::SpillMultiVar spill_multivar_helper(
                 if constexpr(std::is_same_v<VarOn, RType>)
                 {
                     if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp[match_id])))
-                       && (!mctruth_cut || (i.nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
+                       && (!mctruth_cut || (valid_nu_id(*sr, i.nu_id) && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
                     {
                         values.push_back(match_id != kNoMatch ? var(sr->dlp[match_id]) : kNoMatchValue);
                     }
                 }
                 else if constexpr(std::is_same_v<VarOn, TType>)
                 {
-                    if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp[match_id]))) && (!mctruth_cut || (i.nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
+                    if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp[match_id]))) && (!mctruth_cut || (valid_nu_id(*sr, i.nu_id) && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
                     {
                         values.push_back(var(i));
                     }
                 }
                 else if constexpr(std::is_same_v<VarOn, MCTruth>)
                 {
-                    if(cuts(i) && (!comps || (match_id != kNoMatch && match_id < sr->dlp.size() && (*comps)(sr->dlp[match_id]))) && (!mctruth_cut || (i.nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
+                    if(cuts(i) && (!comps || (match_id != kNoMatch && match_id < sr->dlp.size() && (*comps)(sr->dlp[match_id]))) && (!mctruth_cut || (valid_nu_id(*sr, i.nu_id) && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
                     {
-                        if(i.nu_id >= 0)
+                        if(valid_nu_id(*sr, i.nu_id))
                             values.push_back(var(sr->mc.nu[i.nu_id]));
                         else
                             values.push_back(kNoMatchValue);
@@ -818,14 +824,14 @@ ana::SpillMultiVar spill_multivar_helper(
                     // Event-level variable duplicated once per surviving
                     // interaction: the value does not depend on i, only on
                     // whether this interaction passes the configured cuts.
-                    if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp[match_id]))) && (!mctruth_cut || (i.nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
+                    if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp[match_id]))) && (!mctruth_cut || (valid_nu_id(*sr, i.nu_id) && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
                     {
                         values.push_back(var(*sr));
                     }
                 }
                 else if constexpr(std::is_same_v<VarOn, TParticleType> || std::is_same_v<VarOn, RParticleType>)
                 {
-                    if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp[match_id]))) && (!mctruth_cut || (i.nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
+                    if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp[match_id]))) && (!mctruth_cut || (valid_nu_id(*sr, i.nu_id) && (*mctruth_cut)(sr->mc.nu[i.nu_id]))))
                     {
                         for(auto const & j : i.particles)
                         {
@@ -874,7 +880,7 @@ ana::SpillMultiVar spill_multivar_helper(
                 if constexpr(std::is_same_v<VarOn, TType>)
                 {
                     if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp_true[match_id])) || !ismc)
-                        && (match_id == kNoMatch || (!mctruth_cut || (sr->dlp_true[match_id].nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[sr->dlp_true[match_id].nu_id])))))
+                        && (match_id == kNoMatch || (!mctruth_cut || (valid_nu_id(*sr, sr->dlp_true[match_id].nu_id) && (*mctruth_cut)(sr->mc.nu[sr->dlp_true[match_id].nu_id])))))
                     {
                         values.push_back(ismc && match_id != kNoMatch ? var(sr->dlp_true[match_id]) : kNoMatchValue);
                     }
@@ -882,7 +888,7 @@ ana::SpillMultiVar spill_multivar_helper(
                 else if constexpr(std::is_same_v<VarOn, RType>)
                 {
                     if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp_true[match_id])) || !ismc)
-                        && (match_id == kNoMatch || (!mctruth_cut || (sr->dlp_true[match_id].nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[sr->dlp_true[match_id].nu_id])))))
+                        && (match_id == kNoMatch || (!mctruth_cut || (valid_nu_id(*sr, sr->dlp_true[match_id].nu_id) && (*mctruth_cut)(sr->mc.nu[sr->dlp_true[match_id].nu_id])))))
                     {
                         values.push_back(var(i));
                     }
@@ -890,7 +896,7 @@ ana::SpillMultiVar spill_multivar_helper(
                 else if constexpr(std::is_same_v<VarOn, MCTruth>)
                 {
                     if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp_true[match_id])))
-                        && (match_id == kNoMatch || (!mctruth_cut || (sr->dlp_true[match_id].nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[sr->dlp_true[match_id].nu_id])))))
+                        && (match_id == kNoMatch || (!mctruth_cut || (valid_nu_id(*sr, sr->dlp_true[match_id].nu_id) && (*mctruth_cut)(sr->mc.nu[sr->dlp_true[match_id].nu_id])))))
                     {
                         if(!ismc || match_id == kNoMatch)
                         {
@@ -899,7 +905,7 @@ ana::SpillMultiVar spill_multivar_helper(
                         else
                         {
                             int64_t nu_id = sr->dlp_true[match_id].nu_id;
-                            values.push_back(nu_id >= 0 ? var(sr->mc.nu[nu_id]) : kNoMatchValue);
+                            values.push_back(valid_nu_id(*sr, nu_id) ? var(sr->mc.nu[nu_id]) : kNoMatchValue);
                         }
                     }
                 }
@@ -909,7 +915,7 @@ ana::SpillMultiVar spill_multivar_helper(
                     // interaction: the value does not depend on i, only on
                     // whether this interaction passes the configured cuts.
                     if(cuts(i) && (!comps || (match_id != kNoMatch && (*comps)(sr->dlp_true[match_id])) || !ismc)
-                        && (match_id == kNoMatch || (!mctruth_cut || (sr->dlp_true[match_id].nu_id >= 0 && (*mctruth_cut)(sr->mc.nu[sr->dlp_true[match_id].nu_id])))))
+                        && (match_id == kNoMatch || (!mctruth_cut || (valid_nu_id(*sr, sr->dlp_true[match_id].nu_id) && (*mctruth_cut)(sr->mc.nu[sr->dlp_true[match_id].nu_id])))))
                     {
                         values.push_back(var(*sr));
                     }
@@ -1055,7 +1061,7 @@ NamedSpillMultiVar construct_category(
                         if(!reco_cut(sr->dlp[match_id])) continue;
                     }
                     // nu_id < 0: cosmic; >= size(): guard against unpopulated mc.nu on data.
-                    if(i.nu_id >= 0 && (size_t)i.nu_id < sr->mc.nu.size() && !mctruth_cut(sr->mc.nu[i.nu_id])) continue;
+                    if(valid_nu_id(*sr, i.nu_id) && (size_t)i.nu_id < sr->mc.nu.size() && !mctruth_cut(sr->mc.nu[i.nu_id])) continue;
                     assign_category(i, i.nu_id);
                 }
             }
@@ -1073,7 +1079,7 @@ NamedSpillMultiVar construct_category(
                     if(match_id != kNoMatch)
                     {
                         int64_t nu_id = sr->dlp_true[match_id].nu_id;
-                        if(nu_id >= 0 && !mctruth_cut(sr->mc.nu[nu_id])) continue;
+                        if(valid_nu_id(*sr, nu_id) && !mctruth_cut(sr->mc.nu[nu_id])) continue;
                     }
                     if(match_id != kNoMatch && match_id < sr->dlp_true.size())
                         assign_category(sr->dlp_true[match_id], sr->dlp_true[match_id].nu_id);

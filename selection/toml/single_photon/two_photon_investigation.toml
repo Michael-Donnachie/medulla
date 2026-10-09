@@ -12,7 +12,7 @@ proton_low = 1.0
 
 
 [general]
-output = "/exp/sbnd/data/users/mdonnach/medulla_produce/two_photon/two_photons.root"
+output = "/exp/sbnd/data/users/mdonnach/medulla_produce/two_photon/two_photons_pi0.root"
 #output = "/pnfs/sbnd/scratch/users/mdonnach/single_shower_1e20_reweighted_output/single_shower_v2_rewighted_1e20"
 primfn = "default_primary_classification"
 pidfn = "default_pid"
@@ -40,6 +40,7 @@ sim_only = true
 mode = "true"
 cut = [
     { name = "double_photon",                           type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "yes_neutral_pions",                       type = "mctruth"}
 ]
 branch = [
     #mctruth
@@ -54,7 +55,13 @@ branch = [
     { name = "pion_multiplicity",                       type = "both", parameters = [ "@pion_threshold" ]},
     { name = "proton_multiplicity",                     type = "both", parameters = [ "@proton_threshold" ]},
     { name = "muon_multiplicity",                       type = "both", parameters = ["@muon_threshold"]},
-    { name = "category",                                type = "true"},
+    { name = "pi0_beam_costheta",                       type = "both_bivar", biselector="pi0_photon_pair"},
+    { name = "pi0_momentum_mag",                        type = "both_bivar", biselector="pi0_photon_pair"},
+    { name = "pi0_mass_max",                            type = "both_bivar", biselector="pi0_photon_pair"},
+    { name = "pi0_invariant_mass",                      type = "both_bivar", biselector="pi0_photon_pair"},
+    { name = "pi0_opening_costheta",                    type = "both_bivar", biselector="pi0_photon_pair"},
+
+
     #positioning
     { name = "vertex_x",                                type = "both"},    
     { name = "vertex_y",                                type = "both"},

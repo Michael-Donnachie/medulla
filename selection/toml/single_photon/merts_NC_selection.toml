@@ -27,10 +27,10 @@ fsthresh = [
 # SBND sample
 [[sample]]
 name = "simulation"
-#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*.flat.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*.flat.caf.root"
-path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input264-reweighted.flat.caf.root"
+#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input264-reweighted.flat.caf.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input[4-7][0-9][0-9]-reweighted.flat.caf.root"
 #path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input387-reweighted.flat.caf.root"
 #path = "root://fndca1.fnal.gov:1094//pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc1e20/input*-reweighted.flat.caf.root"
@@ -55,8 +55,7 @@ branch = [
     { name = "iscc",                                    type = "mctruth" },
     { name = "interaction_mode",                        type = "mctruth" },
     { name = "interaction_type",                        type = "mctruth" },
-    { name = "nphotons_srtruth",                        type = "mctruth"},
-    #{ name = "npi0s_srtruth",                           type = "mctruth"},
+    { name = "single_photon",                           type = "true",      parameters = [0]}
 ]
 
 
