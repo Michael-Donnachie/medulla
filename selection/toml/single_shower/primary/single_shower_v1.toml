@@ -31,6 +31,11 @@ keys = [
     "sbnd_ar23p_dirt",
     "sbnd_intime_mc5e18",
 ]
+enable = [
+    "sbnd_ar23p_mc5e18",
+    "sbnd_ar23p_dirt",
+    "sbnd_intime_mc5e18",
+]
 
 
 [[tree]]  #True single photon selection
