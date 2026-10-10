@@ -960,7 +960,7 @@ def launch_jobsub(
 
 def check_git_branch(
     branch : str,
-    repo_url : str = 'https://github.com/justinjmueller/medulla',
+    repo_url : str = 'https://github.com/Michael-Donnachie/medulla',
 ):
     """
     Check if the specified branch or tag exists in the given Git 
