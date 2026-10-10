@@ -12,11 +12,11 @@ weight_clip = [0.0, 10.0]
 store_genie_evt_rec = true
 
 [[sysvar]]
-name = "reco_leading_depot_shower_ke"
+name = "reco_leading_observed_shower_ke"
 bins = [20, 0, 1000]   # MeV; adjust to your range
 
 [[sysvar]]
-name = "true_leading_depot_shower_ke"
+name = "true_leading_observed_shower_ke"
 bins = [20, 0, 1000]
 
 

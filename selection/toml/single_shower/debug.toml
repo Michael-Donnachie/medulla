@@ -1,0 +1,38 @@
+[parameters]
+photon_threshold = 20.0
+
+[general]
+output = "debug"
+primfn = "default_primary_classification"
+pidfn = "default_pid"
+fsthresh = [20.0, 10.0, 100.0, 130.0, 25.0]
+
+[[sample]]
+name = "cv_one"
+path = "/pnfs/sbn/persistent/users/mueller/osc/sbnd/mc_MCP2025B_5e18_v10_06_00_09_prodgenie_corsika_proton_rockbox_sbnd_CV_caf_sbnd/0000/90/caf-d78728bb-561a-4d88-8802-a9241428b5ad.ar23p.flat.caf.root"
+ismc = true
+
+[[tree]]   # every reco interaction
+name = "all_reco"
+sim_only = false
+mode = "reco"
+cut = [ { name = "no_cut", type = "reco" } ]
+branch = [ { name = "interaction_id", type = "reco" } ]
+
+[[tree]]   # every reco particle
+name = "reco_particles"
+sim_only = false
+mode = "reco"
+cut = [ { name = "no_cut", type = "reco" } ]
+branch = [
+    { name = "pid",               type = "reco_particle" },
+    { name = "ke",                type = "reco_particle" },
+    { name = "total_depositions", type = "reco_particle" },
+]
+
+[[tree]]   # your first cut on its own
+name = "single_shower"
+sim_only = false
+mode = "reco"
+cut = [ { name = "single_shower_observed_cut", type = "reco", parameters = [ "@photon_threshold" ] } ]
+branch = [ { name = "interaction_id", type = "reco" } ]
