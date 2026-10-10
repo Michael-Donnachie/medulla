@@ -28,7 +28,7 @@ usage() {
 
 # Initialize variables
 PROJECT=""
-TAG="TAG="single_photon"
+TAG="single_photon"
 SAMPLE=""
 FORCE=""
 
