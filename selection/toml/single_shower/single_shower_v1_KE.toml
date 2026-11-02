@@ -32,21 +32,17 @@ fsthresh = [
 [[include_samples]]
 file = "common/osc.toml"
 keys = [
-    "sbnd_ar23p_mc5e18",
-    "sbnd_ar23p_dirt",
-    "sbnd_intime_mc5e18",
+    "sbnd_offbeam"
 ]
 enable = [
-    "sbnd_ar23p_mc5e18",
-    "sbnd_ar23p_dirt",
-    "sbnd_intime_mc5e18",
+    "sbnd_offbeam"
 ]
 
 
 [[tree]]  #True single photon selection
 name = "photon_true_neutrino"
 sim_only = true
-add_systematics = true
+add_systematics = false
 mode = "true"
 cut = [
     { name = "single_photon_observed_cut",              type = "true",  parameters = [ "@photon_threshold"  ] },
@@ -88,6 +84,11 @@ branch = [
     { name = "vertex_y",                                type = "both"},
     { name = "vertex_z",                                type = "both"},
     { name = "shower_opening_angle",                    type = "both"},
+    { name = "dpT",                                     type = "both"},
+    { name = "dphiT",                                   type = "both"},
+    { name = "dpT_lp",                                  type = "both"},
+    { name = "dalphaT",                                 type = "both"},
+    { name = "dpL",                                     type = "both"},
 
     #leading shower
     #energy
@@ -152,20 +153,24 @@ branch = [
 
 [[tree]]  #reco only single photon
 name = "photon_single"
-sim_only = true
+sim_only = false
 mode = "reco"
 cut = [
     { name = "single_shower_observed_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] } 
 ]
 branch = [
     { name = "interaction_id",                          type = "both"},
-    { name = "category",                                type = "true"}
-]
+    { name = "category",                                type = "true"},
+    { name = "cc",                             type = "mctruth" },
+    { name = "interaction_mode",               type = "mctruth" },
+    { name = "interaction_type",               type = "mctruth" },
+    { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },]
 
 
 [[tree]]  #reco single photon + no other particles (except e)
 name = "photon_nopart"
-sim_only = true
+sim_only = false
 mode = "reco"
 cut = [
     { name = "single_shower_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
@@ -174,14 +179,19 @@ cut = [
 ]
 branch = [
     { name = "interaction_id",                          type = "both"},
-    { name = "category",                                type = "true"}
+    { name = "category",                                type = "true"},
+    { name = "cc",                             type = "mctruth" },
+    { name = "interaction_mode",               type = "mctruth" },
+    { name = "interaction_type",               type = "mctruth" },
+    { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },
 ]
 
 
 
 [[tree]]  #reco single photon + no other particles (including e) + containment
 name = "photon_contained"
-sim_only = true
+sim_only = false
 mode = "reco"
 cut = [
     { name = "single_shower_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
@@ -191,15 +201,19 @@ cut = [
 ]
 branch = [
     { name = "interaction_id",                          type = "both"},
-    { name = "category",                                type = "true"}
-]
+    { name = "category",                                type = "true"},
+    { name = "cc",                             type = "mctruth" },
+    { name = "interaction_mode",               type = "mctruth" },
+    { name = "interaction_type",               type = "mctruth" },
+    { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },]
 
 
 
 [[tree]]  #reco single shower + no other particles (including e) + containment + netrino
 name = "photon_flashmatch"
-sim_only = true
-add_systematics = true
+sim_only = false
+add_systematics = false
 mode = "reco"
 cut = [
     { name = "single_shower_observed_cut",                  type = "reco",  parameters = [ "@photon_threshold"  ] },
@@ -273,6 +287,11 @@ branch = [
     { name = "photon_softmax",      type = "reco_particle",     selector = "leading_shower"},
     { name = "electron_softmax",    type = "reco_particle",     selector = "leading_shower"},
     { name = "pid",                 type = "both_particle",     selector = "leading_shower"},
+    { name = "dpT",                                     type = "both"},
+    { name = "dphiT",                                   type = "both"},
+    { name = "dpT_lp",                                  type = "both"},
+    { name = "dalphaT",                                 type = "both"},
+    { name = "dpL",                                     type = "both"},
 
     #subleading shower
     #energy
@@ -307,8 +326,8 @@ branch = [
 
 [[tree]]  #reco single photon + no other particles (including e) + containment + netrino
 name = "photon_one_photon"
-sim_only = true
-add_systematics = true
+sim_only = false
+add_systematics = false
 mode = "reco"
 cut = [
     { name = "single_photon_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
@@ -349,6 +368,11 @@ branch = [
     { name = "vertex_y",                                type = "both"},
     { name = "vertex_z",                                type = "both"},
     { name = "shower_opening_angle",                    type = "both"},
+    { name = "dpT",                                     type = "both"},
+    { name = "dphiT",                                   type = "both"},
+    { name = "dpT_lp",                                  type = "both"},
+    { name = "dalphaT",                                 type = "both"},
+    { name = "dpL",                                     type = "both"},
     #electron
     { name = "ke",                  type = "both_particle",     selector = "leading_electron"},
 
