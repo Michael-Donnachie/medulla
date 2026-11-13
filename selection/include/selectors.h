@@ -692,7 +692,7 @@ namespace selectors
     size_t submid_depot_shower(const T & obj)
     {
         auto [index_lead, index_sub] = mid_and_submid_shower_index_depot(obj);
-        return index_lead;
+        return index_sub;
     }
     REGISTER_SELECTOR(submid_depot_shower, submid_depot_shower);
 

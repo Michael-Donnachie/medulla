@@ -37,7 +37,9 @@ keys = [
     "sbnd_detvar_mattmod_yz"
 ]
 enable = [
-    "sbnd_offbeam"
+    "sbnd_detvar_newdent",
+    "sbnd_detvar_newcv",
+    "sbnd_detvar_mattmod_yz"
 ]
 
 

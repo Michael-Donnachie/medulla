@@ -1,38 +1,76 @@
 [parameters]
 photon_threshold = 20.0
+photon_low = 10.0
+electron_threshold = 10.0
+electron_low = 1.0
+muon_threshold = 100.0
+muon_low = 1.0
+pion_threshold = 130.0
+pion_low = 1.0
+proton_threshold = 25.0
+proton_low = 1.0
+containment_margin = 1.0
+mctruth_threshold = 0.0  # KE threshold (MeV) for the GENIE-level *_srtruth counters
+
+
 
 [general]
-output = "debug"
+output = "/exp/sbnd/data/users/mdonnach/medulla_produce/inclusive_1g/test_new_definition/selection_AR23.root"
 primfn = "default_primary_classification"
 pidfn = "default_pid"
-fsthresh = [20.0, 10.0, 100.0, 130.0, 25.0]
-
-[[sample]]
-name = "cv_one"
-path = "/pnfs/sbn/persistent/users/mueller/osc/sbnd/mc_MCP2025B_5e18_v10_06_00_09_prodgenie_corsika_proton_rockbox_sbnd_CV_caf_sbnd/0000/90/caf-d78728bb-561a-4d88-8802-a9241428b5ad.ar23p.flat.caf.root"
-ismc = true
-
-[[tree]]   # every reco interaction
-name = "all_reco"
-sim_only = false
-mode = "reco"
-cut = [ { name = "no_cut", type = "reco" } ]
-branch = [ { name = "interaction_id", type = "reco" } ]
-
-[[tree]]   # every reco particle
-name = "reco_particles"
-sim_only = false
-mode = "reco"
-cut = [ { name = "no_cut", type = "reco" } ]
-branch = [
-    { name = "pid",               type = "reco_particle" },
-    { name = "ke",                type = "reco_particle" },
-    { name = "total_depositions", type = "reco_particle" },
+fsthresh = [
+    "@photon_threshold",
+    "@electron_threshold",
+    "@muon_threshold",
+    "@pion_threshold",
+    "@proton_threshold",
 ]
 
-[[tree]]   # your first cut on its own
-name = "single_shower"
-sim_only = false
-mode = "reco"
-cut = [ { name = "single_shower_observed_cut", type = "reco", parameters = [ "@photon_threshold" ] } ]
-branch = [ { name = "interaction_id", type = "reco" } ]
+#[[include_samples]]
+#file = "common/osc.toml"
+#keys = [
+#    "sbnd_ar23p_mc5e18"
+#]
+#enable = [
+#    "sbnd_ar23p_mc5e18"
+#]
+
+
+# SBND sample
+[[sample]]
+name = "simulation"
+path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
+#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input000-reweighted.flat.caf.root"
+ismc = true
+disable = false # Optional: default = falses
+
+
+
+[[tree]]  #True single photon selection
+name = "single_photon_true"
+sim_only = true
+add_systematics = false
+mode = "true"
+cut = [
+    { name = "single_photon",              type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "no_electrons",                  type = "true",  parameters = [ "@electron_threshold" ]},
+    { name = "no_neutral_pions",                        type = "mctruth"} ,
+    { name = "neutrino",                                type = "true"},
+
+]
+branch = [
+    #mctruth
+    { name = "cc",                             type = "mctruth" },
+    { name = "interaction_mode",               type = "mctruth" },
+    { name = "interaction_type",               type = "mctruth" },
+    { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },
+    { name = "nelectrons_srtruth",       type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nmuons_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "npi0s_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "npions_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "netas_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nprotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nphotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+
+]

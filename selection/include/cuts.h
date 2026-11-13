@@ -1234,7 +1234,7 @@ namespace cuts
     template<class T>
     bool single_shower_observed_cut(const T & obj, std::vector<double> params={25,})
     {
-        auto [lead_shower_index, sub_shower_index] = selectors::lead_and_sub_shower_index_depot(obj);
+        auto [lead_shower_index, sub_shower_index] = selectors::lead_and_sub_shower_index(obj);
         double opening_angle;
 
         if(lead_shower_index == kNoMatch || sub_shower_index == kNoMatch){

@@ -43,10 +43,10 @@ name = "photon_true_neutrino"
 sim_only = true
 mode = "true"
 cut = [
-    { name = "single_photon_observed_cut",              type = "true",  parameters = [ "@photon_threshold"  ] },
-    { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
-    { name = "no_charged_pions_inclusive",              type = "true",  parameters = [ "@pion_threshold" ]},
-    { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
+    { name = "single_photon_observed_cut",              type = "true"},
+    { name = "no_electrons_inclusive",                  type = "true"},
+    { name = "no_charged_pions_inclusive",              type = "true"},
+    { name = "no_muon_inclusive",                       type = "true"},
     { name = "contained_fip_cut",                       type = "true"},
     { name = "neutrino",                                type = "true"}
 ]
