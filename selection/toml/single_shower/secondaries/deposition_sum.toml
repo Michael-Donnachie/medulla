@@ -37,7 +37,7 @@ name = "photon_true_neutrino"
 sim_only = true
 mode = "true"
 cut = [
-    { name = "single_photon_observed_cut",              type = "true",  parameters = [15 ] },
+    { name = "one_or_two_photon_observed_cut",              type = "true",  parameters = [15 ] },
     { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",              type = "true",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
@@ -47,8 +47,8 @@ cut = [
 branch = [
     #leading shower
     #energy
-    { name = "ke",                  type = "both_particle",     selector = "leading_shower" },
-    { name = "total_depositions",   type = "both_particle",     selector = "leading_shower"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_gore" },
+    { name = "total_depositions",   type = "both_particle",     selector = "leading_gore"},
     { name = "ke",                  type = "both_particle",     selector = "leading_photon" },
     { name = "total_depositions",   type = "both_particle",     selector = "leading_photon"},
 ]

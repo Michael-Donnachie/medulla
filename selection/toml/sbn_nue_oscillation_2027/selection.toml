@@ -67,7 +67,7 @@ branch = [
     { name = "pion_multiplicity",              type = "both",  parameters = [ "@pion_threshold"              ] },
     { name = "muon_multiplicity",              type = "both",  parameters = [ "@muon_threshold"              ] },
     { name = "proton_multiplicity",            type = "both",  parameters = [ "@proton_threshold"            ] },
-    { name = "nonprimary_shower_multiplicity", type = "both",  parameters = [ "@nonprimary_shower_threshold" ] },
+    { name = "nonprimary_gore_multiplicity", type = "both",  parameters = [ "@nonprimary_shower_threshold" ] },
     { name = "single_michel",                  type = "both",  parameters = [ "@michel_threshold"            ] },
 
     # Information for Neutrino 2026
@@ -168,7 +168,7 @@ branch = [
     { name = "pion_multiplicity",              type = "both",  parameters = [ "@pion_threshold"              ] },
     { name = "muon_multiplicity",              type = "both",  parameters = [ "@muon_threshold"              ] },
     { name = "proton_multiplicity",            type = "both",  parameters = [ "@proton_threshold"            ] },
-    { name = "nonprimary_shower_multiplicity", type = "both",  parameters = [ "@nonprimary_shower_threshold" ] },
+    { name = "nonprimary_gore_multiplicity", type = "both",  parameters = [ "@nonprimary_shower_threshold" ] },
     { name = "single_michel",                  type = "both",  parameters = [ "@michel_threshold"            ] },
 
     # Information for Neutrino 2026

@@ -372,18 +372,18 @@ namespace selectors
     REGISTER_SELECTOR(sub_leading_depot_photon, sub_leading_depot_photon);
 
     /**
-     * @brief Finds the index corresponding to the leading and sub-leading shower, 
+     * @brief Finds the index corresponding to the leading and sub-leading gOre (photon or electron), 
      * ranked by deposited energy.
-     * @details Returns the index of the shower with the highest and second-highest
+     * @details Returns the index of the gOre with the highest and second-highest
      * deposited energy (depositions_sum) in the interaction
      * @note created for single shower selection
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
-     * @return the index of the leading and sub-leading shower by deposited energy, or
-     * kNoMatch if showers are not found.
+     * @return the index of the leading and sub-leading gOre by deposited energy, or
+     * kNoMatch if gOres are not found.
      */
     template<class T>
-    std::tuple<size_t, size_t> lead_and_sub_shower_index_depot(const T & obj)
+    std::tuple<size_t, size_t> lead_and_sub_gore_index_depot(const T & obj)
     {
         double sub_photon_depot(0);
         double leading_photon_depot(0);
@@ -457,17 +457,17 @@ namespace selectors
     }
 
     /**
-     * @brief Finds the index corresponding to the two highest deposition showers 
+     * @brief Finds the index corresponding to the two highest deposition gOres (photons or electrons) 
      * between the max and min threshold ranked by deposited energy.
-     * @details Returns the index of the shower with the highest and second-highest
+     * @details Returns the index of the gOre with the highest and second-highest
      * deposited energy (depositions_sum) bewtween the two energy thresholds in the interaction
      * @note created for single shower selection - used to remove electrons between 10-20MeV
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
-     * @return the index of the two highest energy showers between a threshold
+     * @return the index of the two highest energy gOres between a threshold
      */
     template<class T>
-    std::tuple<size_t, size_t> mid_and_submid_shower_index_depot(const T & obj)
+    std::tuple<size_t, size_t> mid_and_submid_gore_index_depot(const T & obj)
     {
         double sub_photon_depot(0);
         double leading_photon_depot(0);
@@ -536,18 +536,18 @@ namespace selectors
 
 
     /**
-     * @brief Finds the index corresponding to the leading and sub-leading shower, 
+     * @brief Finds the index corresponding to the leading and sub-leading gOre (photon or electron), 
      * ranked by kinetic energy.
-     * @details Returns the index of the shower with the highest and second-highest
+     * @details Returns the index of the gOre with the highest and second-highest
      * kinetic energy (ke) in the interaction
      * @note created for single shower selection
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
-     * @return the index of the leading and sub-leading shower by kinetic energy, or
-     * kNoMatch if showers are not found.
+     * @return the index of the leading and sub-leading gOre by kinetic energy, or
+     * kNoMatch if gOres are not found.
      */
     template<class T>
-    std::tuple<size_t, size_t> lead_and_sub_shower_index(const T & obj)
+    std::tuple<size_t, size_t> lead_and_sub_gore_index(const T & obj)
     {
         double sub_photon(0);
         double leading_photon(0);
@@ -622,11 +622,50 @@ namespace selectors
 
 
     /**
-     * @brief Finds the index corresponding to the leading shower, ranked by
+     * @brief Finds the index corresponding to the leading gOre (photon or electron), ranked by
      * kinetic energy.
-     * @details Returns the index of the shower with the highest kinetic
+     * @details Returns the index of the gOre with the highest kinetic
      * energy (ke) in the interaction, via
-     * @ref lead_and_sublead_shower_index. 
+     * @ref lead_and_sub_gore_index. 
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the leading gOre by kinetic energy, or
+     * kNoMatch if no gOres are found.
+     */
+    template<class T>
+    size_t leading_gore(const T & obj)
+    {
+        auto [index_lead, index_sub] = lead_and_sub_gore_index(obj);
+        return index_lead;
+    }
+    REGISTER_SELECTOR(leading_gore, leading_gore);
+
+    /**
+     * @brief Finds the index corresponding to the sub-leading gOre (photon or electron), ranked by
+     * kinetic energy.
+     * @details Returns the index of the gOre with the second highest kinetic
+     * energy (ke) in the interaction, via
+     * @ref lead_and_sub_gore_index. 
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to operate on.
+     * @return the index of the sub-leading gOre by kinetic energy, or
+     * kNoMatch if no gOres are found.
+     */
+    template<class T>
+    size_t sub_leading_gore(const T & obj)
+    {
+        auto [index_lead, index_sub] = lead_and_sub_gore_index(obj);
+        return index_sub;
+    }
+    REGISTER_SELECTOR(sub_leading_gore, sub_leading_gore);
+
+    /**
+     * @brief Finds the index corresponding to the leading semantic shower,
+     * ranked by kinetic energy.
+     * @details Returns the index of the particle with semantic type 0
+     * (shower) and the highest kinetic energy (ke) in the interaction,
+     * regardless of PID or primary classification. This is the semantic-type
+     * analogue of @ref leading_gore.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
      * @return the index of the leading shower by kinetic energy, or
@@ -635,86 +674,78 @@ namespace selectors
     template<class T>
     size_t leading_shower(const T & obj)
     {
-        auto [index_lead, index_sub] = lead_and_sub_shower_index(obj);
-        return index_lead;
+        double leading_ke(0);
+        size_t index(kNoMatch);
+        for(size_t i(0); i < obj.particles.size(); ++i)
+        {
+            const auto & p = obj.particles[i];
+            double energy(pvars::ke(p));
+            if(pvars::semantic_type(p) == 0 && energy > leading_ke)
+            {
+                leading_ke = energy;
+                index = i;
+            }
+        }
+        return index;
     }
     REGISTER_SELECTOR(leading_shower, leading_shower);
 
     /**
-     * @brief Finds the index corresponding to the sub-leading shower, ranked by
-     * kinetic energy.
-     * @details Returns the index of the shower with the second highest kinetic
-     * energy (ke) in the interaction, via
-     * @ref lead_and_sublead_shower_index. 
-     * @tparam T the type of interaction (true or reco).
-     * @param obj the interaction to operate on.
-     * @return the index of the sub-leading shower by kinetic energy, or
-     * kNoMatch if no showers are found.
-     */
-    template<class T>
-    size_t sub_leading_shower(const T & obj)
-    {
-        auto [index_lead, index_sub] = lead_and_sub_shower_index(obj);
-        return index_sub;
-    }
-    REGISTER_SELECTOR(sub_leading_shower, sub_leading_shower);
-
-    /**
-     * @brief Finds the index corresponding to the leading shower, ranked by
+     * @brief Finds the index corresponding to the leading gOre (photon or electron), ranked by
      * deposited energy.
-     * @details Returns the index of the shower with the highest deposited
+     * @details Returns the index of the gOre with the highest deposited
      * energy (depositions_sum) in the interaction, via
-     * @ref lead_and_sublead_shower_index_depot. 
+     * @ref lead_and_sub_gore_index_depot. 
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
-     * @return the index of the leading shower by deposited energy, or
-     * kNoMatch if no showers are found.
+     * @return the index of the leading gOre by deposited energy, or
+     * kNoMatch if no gOres are found.
      */
     template<class T>
-    size_t leading_depot_shower(const T & obj)
+    size_t leading_depot_gore(const T & obj)
     {
-        auto [index_lead, index_sub] = lead_and_sub_shower_index_depot(obj);
+        auto [index_lead, index_sub] = lead_and_sub_gore_index_depot(obj);
         return index_lead;
     }
-    REGISTER_SELECTOR(leading_depot_shower, leading_depot_shower);
+    REGISTER_SELECTOR(leading_depot_gore, leading_depot_gore);
 
 
     template<class T>
-    size_t mid_depot_shower(const T & obj)
+    size_t mid_depot_gore(const T & obj)
     {
-        auto [index_lead, index_sub] = mid_and_submid_shower_index_depot(obj);
+        auto [index_lead, index_sub] = mid_and_submid_gore_index_depot(obj);
         return index_lead;
     }
-    REGISTER_SELECTOR(mid_depot_shower, mid_depot_shower);
+    REGISTER_SELECTOR(mid_depot_gore, mid_depot_gore);
     
 
     template<class T>
-    size_t submid_depot_shower(const T & obj)
+    size_t submid_depot_gore(const T & obj)
     {
-        auto [index_lead, index_sub] = mid_and_submid_shower_index_depot(obj);
+        auto [index_lead, index_sub] = mid_and_submid_gore_index_depot(obj);
         return index_sub;
     }
-    REGISTER_SELECTOR(submid_depot_shower, submid_depot_shower);
+    REGISTER_SELECTOR(submid_depot_gore, submid_depot_gore);
 
 
     /**
-     * @brief Finds the index corresponding to the sub-leading shower, ranked by
+     * @brief Finds the index corresponding to the sub-leading gOre (photon or electron), ranked by
      * deposited energy.
-     * @details Returns the index of the shower with the second highest deposited
+     * @details Returns the index of the gOre with the second highest deposited
      * energy (depositions_sum) in the interaction, via
-     * @ref lead_and_sublead_shower_index_depot. 
+     * @ref lead_and_sub_gore_index_depot. 
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
-     * @return the index of the sub-leading shower by deposited energy, or
-     * kNoMatch if no showers are found.
+     * @return the index of the sub-leading gOre by deposited energy, or
+     * kNoMatch if no gOres are found.
      */
     template<class T>
-    size_t sub_leading_depot_shower(const T & obj)
+    size_t sub_leading_depot_gore(const T & obj)
     {
-        auto [index_lead, index_sub] = lead_and_sub_shower_index_depot(obj);
+        auto [index_lead, index_sub] = lead_and_sub_gore_index_depot(obj);
         return index_sub;
     }
-    REGISTER_SELECTOR(sub_leading_depot_shower, sub_leading_depot_shower);
+    REGISTER_SELECTOR(sub_leading_depot_gore, sub_leading_depot_gore);
 
     /**
      * @brief Finds the index corresponding to the leading photon, ranked by

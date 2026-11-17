@@ -53,7 +53,7 @@ branch = [
     { name = "pion_multiplicity",              type = "reco",  parameters = [ "@pion_threshold"              ] },
     { name = "muon_multiplicity",              type = "reco",  parameters = [ "@muon_threshold"              ] },
     { name = "proton_multiplicity",            type = "reco",  parameters = [ "@proton_threshold"            ] },
-    { name = "nonprimary_shower_multiplicity", type = "reco",  parameters = [ "@nonprimary_shower_threshold" ] },
+    { name = "nonprimary_gore_multiplicity", type = "reco",  parameters = [ "@nonprimary_shower_threshold" ] },
 
     # Information for Neutrino 2026
     { name = "cathode_crosser",       type = "both"    },

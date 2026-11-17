@@ -37,7 +37,7 @@ name = "photon_true_neutrino"
 sim_only = false
 mode = "true"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                       type = "true",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   type = "true",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "true",  parameters = [ "@muon_threshold" ]},
@@ -72,7 +72,7 @@ name = "photon_single"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] } 
+    { name = "one_or_two_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] } 
 ]
 branch = [
     { name = "ke",                type = "both_particle", selector = "leading_photon" },
@@ -93,7 +93,7 @@ name = "photon_nopart"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_charged_pions_inclusive",                   type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]}
 ]
@@ -115,7 +115,7 @@ name = "photon_noe"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                       type = "reco",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]}
@@ -138,7 +138,7 @@ name = "photon_contained"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                       type = "reco",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]},
@@ -164,7 +164,7 @@ name = "photon_flashmatch"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                       type = "reco",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]},
@@ -199,7 +199,7 @@ branch = [
 
 [[category]] #0 single photon signal with containment, no other particle
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                       parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           parameters = [ "@muon_threshold" ]},
@@ -211,7 +211,7 @@ cuts = [
 
 [[category]] #1 single photon signal uncontained, no other particle
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                       parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           parameters = [ "@muon_threshold" ]},
@@ -221,7 +221,7 @@ cuts = [
 
 [[category]] #2 single photon signal from dirt, no other particle
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                       parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           parameters = [ "@muon_threshold" ]},
@@ -232,7 +232,7 @@ cuts = [
 
 [[category]] #3 single photon contained + others not dirt
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
     { name = "neutrino"},
     { name = "!is_dirt" },
     { name = "contained_fip_cut_depot"}
@@ -240,14 +240,14 @@ cuts = [
 
 [[category]] #4 single photon uncontained + others not dirt
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
     { name = "!contained_fip_cut_depot"},
     { name = "neutrino"}
 ]
 
 [[category]] #5 single photon + others is dirt
 cuts = [
-    { name = "single_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             parameters = [ "@photon_threshold"  ] },
     { name = "is_dirt" },
     { name = "neutrino"}
 ]

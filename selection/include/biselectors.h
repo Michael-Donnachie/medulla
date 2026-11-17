@@ -197,20 +197,20 @@ namespace biselectors
 
     
     /**
-     * @brief Selects the leading and sub-leading shower.
-     * @details The leading and sub-leading shower are defined as the particles with
+     * @brief Selects the leading and sub-leading gOre (photon or electron).
+     * @details The leading and sub-leading gOre are defined as the particles with
      * the highest and second highest deposited_sum of the combined photon and electron types.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to operate on.
-     * @return pair of indices: {leading_shower, sub_leading_shower}.
+     * @return pair of indices: {leading_gore, sub_leading_gore}.
      */
     template<class T>
-    std::pair<size_t, size_t> lead_and_sub_depot_shower(const T & obj)
+    std::pair<size_t, size_t> lead_and_sub_depot_gore(const T & obj)
     {
-        auto [lead_shower, sub_shower] = selectors::lead_and_sub_shower_index_depot(obj);
-        return {lead_shower, sub_shower};
+        auto [lead_gore, sub_gore] = selectors::lead_and_sub_gore_index_depot(obj);
+        return {lead_gore, sub_gore};
     }
-    REGISTER_BISELECTOR(lead_and_sub_depot_shower, lead_and_sub_depot_shower);
+    REGISTER_BISELECTOR(lead_and_sub_depot_gore, lead_and_sub_depot_gore);
 
 }
 #endif // BISELECTORS_H

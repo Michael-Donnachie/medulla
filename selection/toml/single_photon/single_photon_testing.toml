@@ -37,7 +37,7 @@ name = "photon_true_neutrino"
 sim_only = false
 mode = "true"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                       type = "true",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",                   type = "true",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "true",  parameters = [ "@muon_threshold" ]},

@@ -40,7 +40,7 @@ name = "photon_true_neutrino"
 sim_only = false
 mode = "true"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",              type = "true",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
@@ -48,7 +48,7 @@ cut = [
     { name = "neutrino",                                type = "true"}
 ]
 branch = [
-    { name = "ke",                  type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "ke",                  type = "both_particle",     selector = "leading_depot_gore" },
     { name = "ke",                  type = "both_particle",     selector = "leading_photon" },
 
 ]
@@ -61,7 +61,7 @@ cut = [
     { name = "single_photon",             type = "true",  parameters = [ "@photon_threshold"  ] },
 ]
 branch = [
-    { name = "ke",                  type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "ke",                  type = "both_particle",     selector = "leading_depot_gore" },
     { name = "ke",                  type = "both_particle",     selector = "leading_photon" },
     { name = "total_depositions",                  type = "both_particle",     selector = "leading_photon" },
 
@@ -72,10 +72,10 @@ name = "photon_true_depot"
 sim_only = false
 mode = "true"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
 ]
 branch = [
-    { name = "ke",                  type = "both_particle",     selector = "leading_depot_shower" },
+    { name = "ke",                  type = "both_particle",     selector = "leading_depot_gore" },
     { name = "ke",                  type = "both_particle",     selector = "leading_photon" },
 
 ]
@@ -86,10 +86,10 @@ name = "photon_flashmatch"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_shower_observed_cut",                 type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_gore_observed_cut",                 type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_charged_pions_inclusive",                  type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]},
-    { name = "contained_shower_fip_cut",                    type = "reco"},
+    { name = "contained_gore_fip_cut",                    type = "reco"},
     { name = "valid_flashmatch",                            type = "reco"}
 ]
 branch = [

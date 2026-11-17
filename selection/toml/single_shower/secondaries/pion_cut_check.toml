@@ -44,7 +44,7 @@ name = "no_pions"
 sim_only = true
 mode = "true"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
     { name = "no_charged_pions_inclusive",              type = "true",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
@@ -71,7 +71,7 @@ name = "yes_pions"
 sim_only = true
 mode = "true"
 cut = [
-    { name = "single_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_deposited_cut",             type = "true",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
     { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
     { name = "contained_fip_cut_depot",                 type = "true"},

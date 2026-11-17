@@ -61,16 +61,4 @@ cut = [
 branch = [
     #mctruth
     { name = "cc",                             type = "mctruth" },
-    { name = "interaction_mode",               type = "mctruth" },
-    { name = "interaction_type",               type = "mctruth" },
-    { name = "neutrino_energy",                type = "mctruth" },
-    { name = "neutrino_id",                    type = "true" },
-    { name = "nelectrons_srtruth",       type = "mctruth", parameters = [ "@mctruth_threshold" ]},
-    { name = "nmuons_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
-    { name = "npi0s_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
-    { name = "npions_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
-    { name = "netas_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
-    { name = "nprotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
-    { name = "nphotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
-
 ]

@@ -253,110 +253,41 @@ namespace cuts
     REGISTER_CUT_SCOPE(RegistrationScope::Both, fiducial_cut, fiducial_cut);
 
     /**
-     * @brief Apply a fiducial volume cut on photons based on their first interaction
-     * point (FIP) and kinetic energy threshold.
-     * @details Classifies an interaction as contained or not based on whether
-     * the leading (and sub-leading, if present) photon's first interaction point
-     * lies within the TPC fiducial margin. Only photons with a kinetic energy
-     * at or above 20 MeV are subject to the containment check; photons below
-     * this threshold are treated as contained regardless of their FIP. If no
-     * photons are found in the interaction, the interaction is also treated as
-     * contained.
-     *
-     * The containment check is delegated to @ref pcuts::fip_contained with a
-     * margin parameter of 1.0 cm.
-     * @tparam T the type of interaction (true or reco).
-     * @param obj the interaction to select on.
-     * @return true if the photons fip is within fiducial volume
-     */
-    template<class T>
-    bool contained_fip_cut(const T & obj, std::vector<double> params){
-        if(params.size() != 1)
-            throw std::invalid_argument("contained_fip_cut requires exactly one parameter: the inset margin (cm).");
-        size_t lead_phot_index = selectors::leading_photon(obj);
-        size_t sub_lead_phot_index = selectors::sub_leading_photon(obj);
-        // want it to be contained whenever there are no photons or the photons are too low of an energy 
-        // not contained whenever the photons with suitable energy have fip within the TPC margin
-
-        if (lead_phot_index == kNoMatch){
-            return true;
-        }
-
-        else if (sub_lead_phot_index == kNoMatch) {
-            auto & lead_phot(obj.particles[lead_phot_index]);
-            if (lead_phot.ke>=20){
-                if (pcuts::fip_contained(lead_phot, params)==1){
-                return true;
-                }
-                else{
-                    return false;
-                }
-            }
-            else{
-                return true;
-            }
-        }
-        else {
-            auto & lead_phot(obj.particles[lead_phot_index]);
-            auto & sub_lead_phot(obj.particles[sub_lead_phot_index]);
-            if (lead_phot.ke>=20 && sub_lead_phot.ke>=20){
-                if (pcuts::fip_contained(lead_phot,params)==1 && pcuts::fip_contained(sub_lead_phot,params)==1){
-                    return true;
-                }
-                else{
-                    return false;
-                }
-            }
-            else if (lead_phot.ke>=20){
-                if (pcuts::fip_contained(lead_phot,params)==1){
-                return true;
-                }
-                else{
-                    return false;
-                }
-            }
-            else{
-                return true;
-            }
-        }
-    }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_fip_cut, contained_fip_cut);
-
-
-    /**
-     * @brief Apply a fiducial volume cut on photons based on their first interaction
+     * @brief Apply a fiducial volume cut on gOres (photons or electrons) based on their first interaction
      * point (FIP) and deposit_sum threshold.
      * @details Classifies an interaction as contained or not based on whether
-     * the leading (and sub-leading, if present) photon's first interaction point
-     * lies within the TPC fiducial margin. Only photons with a deposit_sum
-     * at or above 20 MeV are subject to the containment check; photons below
+     * the leading (and sub-leading, if present) gOre's first interaction point
+     * lies within the TPC fiducial margin. Only gOres with a deposit_sum
+     * at or above 20 MeV are subject to the containment check; gOres below
      * this threshold are treated as contained regardless of their FIP. If no
-     * photons are found in the interaction, the interaction is also treated as
+     * gOres are found in the interaction, the interaction is also treated as
      * contained.
      *
-     * The containment check is delegated to @ref pcuts::fip_contained with a
-     * margin parameter of 1.0 cm.
+     * The containment check is delegated to @ref pcuts::fip_contained, which
+     * insets all six TPC faces by the margin given in @p params[0].
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to select on.
-     * @return true if the photons fip is within fiducial volume
+     * @param params a single-element vector whose entry is the inset margin
+     * (in cm). It must be given in the TOML, e.g.
+     * parameters = [ "@containment_margin" ]; any other number of entries
+     * throws std::invalid_argument.
+     * @return true if the gOres fip is within fiducial volume
      */
     template<class T>
-    bool contained_fip_cut_depot(const T & obj, std::vector<double> params){
+    bool contained_gore_fip_cut_depot(const T & obj, std::vector<double> params){
         if(params.size() != 1)
-            throw std::invalid_argument("contained_fip_cut_depot requires exactly one parameter: the inset margin (cm).");
-        size_t lead_phot_index = selectors::leading_depot_photon(obj);
-        size_t sub_lead_phot_index = selectors::sub_leading_depot_photon(obj);
-        // want it to be contained whenever there are no photons or the photons are too low of an energy 
-        // not contained whenever the photons with suitable energy have fip within the TPC margin
+            throw std::invalid_argument("contained_gore_fip_cut_depot requires exactly one parameter: the inset margin (cm).");
+        size_t lead_gore_index = selectors::leading_depot_gore(obj);
+        size_t sub_lead_gore_index = selectors::sub_leading_depot_gore(obj);
 
-        if (lead_phot_index == kNoMatch){
+        if (lead_gore_index == kNoMatch){
             return true;
         }
 
-        else if (sub_lead_phot_index == kNoMatch) {
-            auto & lead_phot(obj.particles[lead_phot_index]);
-            if (lead_phot.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_phot,params)==1){
+        else if (sub_lead_gore_index == kNoMatch) {
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            if (lead_gore.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1){
                 return true;
                 }
                 else{
@@ -368,18 +299,18 @@ namespace cuts
             }
         }
         else {
-            auto & lead_phot(obj.particles[lead_phot_index]);
-            auto & sub_lead_phot(obj.particles[sub_lead_phot_index]);
-            if (lead_phot.depositions_sum>=20 && sub_lead_phot.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_phot,params)==1 && pcuts::fip_contained(sub_lead_phot,params)==1){
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            auto & sub_lead_gore(obj.particles[sub_lead_gore_index]);
+            if (lead_gore.depositions_sum>=20 && sub_lead_gore.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1 && pcuts::fip_contained(sub_lead_gore,params)==1){
                     return true;
                 }
                 else{
                     return false;
                 }
             }
-            else if (lead_phot.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_phot,params)==1){
+            else if (lead_gore.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1){
                 return true;
                 }
                 else{
@@ -391,108 +322,44 @@ namespace cuts
             }
         }
     }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_fip_cut_depot, contained_fip_cut_depot);
-
-    /**
-     * @brief Apply a fiducial volume cut on showers based on their first interaction
-     * point (FIP) and deposit_sum threshold.
-     * @details Classifies an interaction as contained or not based on whether
-     * the leading (and sub-leading, if present) shower's first interaction point
-     * lies within the TPC fiducial margin. Only showers with a deposit_sum
-     * at or above 20 MeV are subject to the containment check; showers below
-     * this threshold are treated as contained regardless of their FIP. If no
-     * showers are found in the interaction, the interaction is also treated as
-     * contained.
-     *
-     * The containment check is delegated to @ref pcuts::fip_contained with a
-     * margin parameter of 1.0 cm.
-     * @tparam T the type of interaction (true or reco).
-     * @param obj the interaction to select on.
-     * @return true if the showers fip is within fiducial volume
-     */
-    template<class T>
-    bool contained_shower_fip_cut_depot(const T & obj, std::vector<double> params){
-        if(params.size() != 1)
-            throw std::invalid_argument("contained_shower_fip_cut_depot requires exactly one parameter: the inset margin (cm).");
-        size_t lead_shower_index = selectors::leading_depot_shower(obj);
-        size_t sub_lead_shower_index = selectors::sub_leading_depot_shower(obj);
-
-        if (lead_shower_index == kNoMatch){
-            return true;
-        }
-
-        else if (sub_lead_shower_index == kNoMatch) {
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            if (lead_shower.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1){
-                return true;
-                }
-                else{
-                    return false;
-                }
-            }
-            else{
-                return true;
-            }
-        }
-        else {
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            auto & sub_lead_shower(obj.particles[sub_lead_shower_index]);
-            if (lead_shower.depositions_sum>=20 && sub_lead_shower.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1 && pcuts::fip_contained(sub_lead_shower,params)==1){
-                    return true;
-                }
-                else{
-                    return false;
-                }
-            }
-            else if (lead_shower.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1){
-                return true;
-                }
-                else{
-                    return false;
-                }
-            }
-            else{
-                return true;
-            }
-        }
-    }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_shower_fip_cut_depot, contained_shower_fip_cut_depot);
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_gore_fip_cut_depot, contained_gore_fip_cut_depot);
  
     /**
-     * @brief Apply a fiducial volume cut on showers based on their first interaction
+     * @brief Apply a fiducial volume cut on gOres (photons or electrons) based on their first interaction
      * point (FIP) and ke threshold.
      * @details Classifies an interaction as contained or not based on whether
-     * the leading (and sub-leading, if present) shower's first interaction point
-     * lies within the TPC fiducial margin. Only showers with a ke
-     * at or above 20 MeV are subject to the containment check; showers below
+     * the leading (and sub-leading, if present) gOre's first interaction point
+     * lies within the TPC fiducial margin. Only gOres with a ke
+     * at or above 20 MeV are subject to the containment check; gOres below
      * this threshold are treated as contained regardless of their FIP. If no
-     * showers are found in the interaction, the interaction is also treated as
+     * gOres are found in the interaction, the interaction is also treated as
      * contained.
      *
-     * The containment check is delegated to @ref pcuts::fip_contained with a
-     * margin parameter of 1.0 cm.
+     * The containment check is delegated to @ref pcuts::fip_contained, which
+     * insets all six TPC faces by the margin given in @p params[0].
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to select on.
-     * @return true if the showers fip is within fiducial volume
+     * @param params a single-element vector whose entry is the inset margin
+     * (in cm). It must be given in the TOML, e.g.
+     * parameters = [ "@containment_margin" ]; any other number of entries
+     * throws std::invalid_argument.
+     * @return true if the gOres fip is within fiducial volume
      */
     template<class T>
-    bool contained_shower_fip_cut(const T & obj, std::vector<double> params){
+    bool contained_gore_fip_cut(const T & obj, std::vector<double> params){
         if(params.size() != 1)
-            throw std::invalid_argument("contained_shower_fip_cut requires exactly one parameter: the inset margin (cm).");
-        size_t lead_shower_index = selectors::leading_shower(obj);
-        size_t sub_lead_shower_index = selectors::sub_leading_shower(obj);
+            throw std::invalid_argument("contained_gore_fip_cut requires exactly one parameter: the inset margin (cm).");
+        size_t lead_gore_index = selectors::leading_gore(obj);
+        size_t sub_lead_gore_index = selectors::sub_leading_gore(obj);
 
-        if (lead_shower_index == kNoMatch){
+        if (lead_gore_index == kNoMatch){
             return true;
         }
 
-        else if (sub_lead_shower_index == kNoMatch) {
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            if (lead_shower.ke>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1){
+        else if (sub_lead_gore_index == kNoMatch) {
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            if (lead_gore.ke>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1){
                 return true;
                 }
                 else{
@@ -504,18 +371,18 @@ namespace cuts
             }
         }
         else {
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            auto & sub_lead_shower(obj.particles[sub_lead_shower_index]);
-            if (lead_shower.ke>=20 && sub_lead_shower.ke>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1 && pcuts::fip_contained(sub_lead_shower,params)==1){
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            auto & sub_lead_gore(obj.particles[sub_lead_gore_index]);
+            if (lead_gore.ke>=20 && sub_lead_gore.ke>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1 && pcuts::fip_contained(sub_lead_gore,params)==1){
                     return true;
                 }
                 else{
                     return false;
                 }
             }
-            else if (lead_shower.ke>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1){
+            else if (lead_gore.ke>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1){
                 return true;
                 }
                 else{
@@ -527,7 +394,7 @@ namespace cuts
             }
         }
     }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_shower_fip_cut, contained_shower_fip_cut);
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_gore_fip_cut, contained_gore_fip_cut);
 
     /**
      * @brief Apply a cut to select dirt interactions (vertex outside the TPC).
@@ -1045,7 +912,7 @@ namespace cuts
     }
 
     /**
-     * @brief Apply a cut selecting single-photon-like topology by kinetic energy.
+     * @brief Apply a cut selecting one-or-two-photon topology by kinetic energy.
      * @details Selects interactions consistent with a single observed photon,
      * including cases where two photons are reconstructed but are nearly
      * collinear (opening angle < 20°) and thus consistent with
@@ -1061,12 +928,12 @@ namespace cuts
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to select on.
      * @param params a single-element vector whose entry is the minimum photon
-     * kinetic energy threshold (in MeV) for the single-photon count. Defaults
+     * kinetic energy threshold (in MeV) for the photon count. Defaults
      * to 25 MeV.
-     * @return true if the interaction satisfies the single-photon-like topology.
+     * @return true if the interaction satisfies the one-or-two-photon topology.
      */
     template<class T>
-    bool single_photon_observed_cut(const T & obj, std::vector<double> params={25,})
+    bool one_or_two_photon_observed_cut(const T & obj, std::vector<double> params={25,})
     {
         size_t lead_phot_index = selectors::leading_photon(obj);
         size_t sub_lead_phot_index = selectors::sub_leading_photon(obj);
@@ -1096,10 +963,10 @@ namespace cuts
             return false;
         }
     }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, single_photon_observed_cut, single_photon_observed_cut);
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, one_or_two_photon_observed_cut, one_or_two_photon_observed_cut);
 
     /**
-     * @brief Apply a cut selecting single-photon-like topology by deposited energy.
+     * @brief Apply a cut selecting one-or-two-photon topology by deposited energy.
      * @details Selects interactions consistent with a single observed photon,
      * including cases where two photons are reconstructed but are nearly
      * collinear (opening angle < 20°) and thus consistent with
@@ -1115,12 +982,12 @@ namespace cuts
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to select on.
      * @param params a single-element vector whose entry is the minimum deposited
-     * energy threshold (in MeV) for the single-photon count. Defaults to 25 MeV.
-     * @return true if the interaction satisfies the single-photon-like topology
+     * energy threshold (in MeV) for the photon count. Defaults to 25 MeV.
+     * @return true if the interaction satisfies the one-or-two-photon topology
      * under the deposited energy criterion.
      */
     template<class T>
-    bool single_photon_deposited_cut(const T & obj, std::vector<double> params={25,})
+    bool one_or_two_photon_deposited_cut(const T & obj, std::vector<double> params={25,})
     {
         size_t lead_phot_index = selectors::leading_depot_photon(obj);
         size_t sub_lead_phot_index = selectors::sub_leading_depot_photon(obj);
@@ -1150,121 +1017,173 @@ namespace cuts
             return false;
         }
     }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, single_photon_deposited_cut, single_photon_deposited_cut);
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, one_or_two_photon_deposited_cut, one_or_two_photon_deposited_cut);
 
     /**
-     * @brief Apply a cut selecting single-shower-like topology by deposited energy.
-     * @details Selects interactions consistent with a single observed shower,
-     * including cases where two showers are reconstructed but are nearly
+     * @brief Apply a cut selecting one-or-two-gOre (photon or electron) topology by deposited energy.
+     * @details Selects interactions consistent with a single observed gOre,
+     * including cases where two gOres are reconstructed but are nearly
      * collinear (opening angle < 20°) and thus consistent with
-     * a single forward-going electromagnetic shower. Shower energies are
+     * a single forward-going electromagnetic shower. gOre energies are
      * assessed using deposit_sum.
      * 
      * Selection logic:
-     *  - Exactly one shower with depositions_sum ≥ @p params[0]: passes.
-     *  - Exactly two showers both with depositions_sum ≥ 20 MeV and opening
+     *  - Exactly one gOre with depositions_sum ≥ @p params[0]: passes.
+     *  - Exactly two gOres both with depositions_sum ≥ 20 MeV and opening
      *    angle < 20°: passes.
      *  - All other cases: fails.
      *
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to select on.
      * @param params a single-element vector whose entry is the minimum deposited
-     * energy threshold (in MeV) for the single-shower count. Defaults to 25 MeV.
-     * @return true if the interaction satisfies the single-shower-like topology
+     * energy threshold (in MeV) for the gOre count. Defaults to 25 MeV.
+     * @return true if the interaction satisfies the one-or-two-gOre topology
      * under the deposited energy criterion.
      */
     template<class T>
-    bool single_shower_deposited_cut(const T & obj, std::vector<double> params={25,})
+    bool one_or_two_gore_deposited_cut(const T & obj, std::vector<double> params={25,})
     {
-        auto [lead_shower_index, sub_shower_index] = selectors::lead_and_sub_shower_index_depot(obj);
+        auto [lead_gore_index, sub_gore_index] = selectors::lead_and_sub_gore_index_depot(obj);
         double opening_angle;
 
-        if(lead_shower_index == kNoMatch || sub_shower_index == kNoMatch){
+        if(lead_gore_index == kNoMatch || sub_gore_index == kNoMatch){
             opening_angle = kNoMatchValue; 
         }
         
         else{
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            auto & sub_shower(obj.particles[sub_shower_index]);
-            if (lead_shower.depositions_sum >=20 && sub_shower.depositions_sum>=20){
-                opening_angle =  bvars::opening_angle(lead_shower, sub_shower);
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            auto & sub_gore(obj.particles[sub_gore_index]);
+            if (lead_gore.depositions_sum >=20 && sub_gore.depositions_sum>=20){
+                opening_angle =  bvars::opening_angle(lead_gore, sub_gore);
             }
             else{
                 opening_angle =  kNoMatchValue;
             }
         }
         
-        int shower_multiplicity = 0;
-        shower_multiplicity = shower_multiplicity + particle_multiplicity_deposited_inclusive(obj, 2, 0, params);
-        shower_multiplicity = shower_multiplicity + particle_multiplicity_deposited_inclusive(obj, 2, 1, params);
+        int gore_multiplicity = 0;
+        gore_multiplicity = gore_multiplicity + particle_multiplicity_deposited_inclusive(obj, 2, 0, params);
+        gore_multiplicity = gore_multiplicity + particle_multiplicity_deposited_inclusive(obj, 2, 1, params);
         
-        if (shower_multiplicity==1){
+        if (gore_multiplicity==1){
             return true;
         }
-        else if (shower_multiplicity == 2 && opening_angle <0.34906585){
+        else if (gore_multiplicity == 2 && opening_angle <0.34906585){
             return true;
         }
         else{
             return false;
         }
     }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, single_shower_deposited_cut, single_shower_deposited_cut);
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, one_or_two_gore_deposited_cut, one_or_two_gore_deposited_cut);
 
     /**
-     * @brief Apply a cut selecting single-shower-like topology by kinetic energy.
-     * @details Selects interactions consistent with a single observed shower,
-     * including cases where two showers are reconstructed but are nearly
+     * @brief Apply a cut selecting one-or-two-gOre (photon or electron) topology by kinetic energy.
+     * @details Selects interactions consistent with a single observed gOre,
+     * including cases where two gOres are reconstructed but are nearly
      * collinear (opening angle < 20°) and thus consistent with
-     * a single forward-going electromagnetic shower. Shower energies are
+     * a single forward-going electromagnetic shower. gOre energies are
      * assessed using ke.
      * 
      * Selection logic:
-     *  - Exactly one shower with ke ≥ @p params[0]: passes.
-     *  - Exactly two showers both with ke ≥ 20 MeV and opening
+     *  - Exactly one gOre with ke ≥ @p params[0]: passes.
+     *  - Exactly two gOres both with ke ≥ 20 MeV and opening
      *    angle < 20°: passes.
      *  - All other cases: fails.
      *
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to select on.
      * @param params a single-element vector whose entry is the minimum kinetic
-     * energy threshold (in MeV) for the single-shower count. Defaults to 25 MeV.
-     * @return true if the interaction satisfies the single-shower-like topology
+     * energy threshold (in MeV) for the gOre count. Defaults to 25 MeV.
+     * @return true if the interaction satisfies the one-or-two-gOre topology
      * under the kinetic energy criterion.
      */
     template<class T>
-    bool single_shower_observed_cut(const T & obj, std::vector<double> params={25,})
+    bool one_or_two_gore_observed_cut(const T & obj, std::vector<double> params={25,})
     {
-        auto [lead_shower_index, sub_shower_index] = selectors::lead_and_sub_shower_index(obj);
+        auto [lead_gore_index, sub_gore_index] = selectors::lead_and_sub_gore_index(obj);
         double opening_angle;
 
-        if(lead_shower_index == kNoMatch || sub_shower_index == kNoMatch){
+        if(lead_gore_index == kNoMatch || sub_gore_index == kNoMatch){
             opening_angle = kNoMatchValue; 
         }
         
         else{
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            auto & sub_shower(obj.particles[sub_shower_index]);
-            if (lead_shower.ke >=20 && sub_shower.ke>=20){
-                opening_angle =  bvars::opening_angle(lead_shower, sub_shower);
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            auto & sub_gore(obj.particles[sub_gore_index]);
+            if (lead_gore.ke >=20 && sub_gore.ke>=20){
+                opening_angle =  bvars::opening_angle(lead_gore, sub_gore);
             }
             else{
                 opening_angle =  kNoMatchValue;
             }
         }
         
-        int shower_multiplicity = 0;
-        shower_multiplicity = shower_multiplicity + particle_multiplicity_inclusive(obj, 2, 0, params);
-        shower_multiplicity = shower_multiplicity + particle_multiplicity_inclusive(obj, 2, 1, params);
+        int gore_multiplicity = 0;
+        gore_multiplicity = gore_multiplicity + particle_multiplicity_inclusive(obj, 2, 0, params);
+        gore_multiplicity = gore_multiplicity + particle_multiplicity_inclusive(obj, 2, 1, params);
         
-        if (shower_multiplicity==1){
+        if (gore_multiplicity==1){
             return true;
         }
-        else if (shower_multiplicity == 2 && opening_angle <0.34906585){
+        else if (gore_multiplicity == 2 && opening_angle <0.34906585){
             return true;
         }
         else{
             return false;
         }
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, one_or_two_gore_observed_cut, one_or_two_gore_observed_cut);
+
+    /**
+     * @brief Apply a cut requiring exactly one gOre (photon or electron) by
+     * kinetic energy.
+     * @details Counts all particles (primary or otherwise) identified as a
+     * photon or an electron with kinetic energy (ke) at or above
+     * @p params[0], and requires exactly one. This is the strict counterpart
+     * of @ref one_or_two_gore_observed_cut: two collinear gOres do not pass.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV) for a gOre to be counted. Defaults to 25 MeV.
+     * @return true if the interaction has exactly one gOre above threshold.
+     */
+    template<class T>
+    bool single_gore_observed_cut(const T & obj, std::vector<double> params={25,})
+    {
+        size_t gore_multiplicity = particle_multiplicity_inclusive(obj, 1, pvars::kPhoton, params)
+                                 + particle_multiplicity_inclusive(obj, 1, pvars::kElectron, params);
+        return gore_multiplicity == 1;
+    }
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, single_gore_observed_cut, single_gore_observed_cut);
+
+    /**
+     * @brief Apply a cut requiring exactly one semantic shower by kinetic
+     * energy.
+     * @details Counts all particles (primary or otherwise) whose semantic type
+     * is 0 (shower) and whose kinetic energy (ke) is at or above @p params[0],
+     * and requires exactly one. The PID is not used, so this differs from
+     * @ref single_gore_observed_cut wherever the semantic segmentation and the
+     * PID disagree. See @ref vars::shower_multiplicity_inclusive for the
+     * matching variable.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to select on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV) for a shower to be counted. Defaults to 25 MeV.
+     * @return true if the interaction has exactly one shower above threshold.
+     */
+    template<class T>
+    bool single_shower_observed_cut(const T & obj, std::vector<double> params={25,})
+    {
+        size_t count(0);
+        for(const auto & p : obj.particles)
+        {
+            if(pvars::semantic_type(p) == 0 && pvars::ke(p) >= params[0])
+                ++count;
+            if(count > 1)
+                break; // No need to count further.
+        }
+        return count == 1;
     }
     REGISTER_CUT_SCOPE(RegistrationScope::Both, single_shower_observed_cut, single_shower_observed_cut);
 

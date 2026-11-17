@@ -1,0 +1,330 @@
+[parameters]
+photon_threshold = 10.0
+electron_threshold = 10.0
+muon_threshold = 25.0
+pion_threshold = 25.0
+proton_threshold = 25.0
+containment_margin = 1.0  # inset margin (cm) for contained_gore_fip_cut
+mctruth_threshold = 0.0  # KE threshold (MeV) for the GENIE-level *_srtruth counters
+
+
+
+[general]
+output = "/exp/sbnd/data/users/mdonnach/medulla_produce/inclusive_1g/test_new_definition/selection_AR23.root"
+primfn = "default_primary_classification"
+pidfn = "default_pid"
+fsthresh = [
+    "@photon_threshold",
+    "@electron_threshold",
+    "@muon_threshold",
+    "@pion_threshold",
+    "@proton_threshold",
+]
+
+[[include_samples]]
+file = "common/osc.toml"
+keys = [
+    "sbnd_ar23p_mc1e20"
+]
+enable = [
+    "sbnd_ar23p_mc1e20"
+]
+
+
+# SBND sample
+#[[sample]]
+#name = "simulation"
+#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input*-reweighted.flat.caf.root"
+#path = "/pnfs/sbnd/persistent/users/mueller/MCP2025B/simulation/mc5e18/input000-reweighted.flat.caf.root"
+#ismc = true
+#disable = false # Optional: default = falses
+
+
+
+[[tree]]  #True single photon selection
+name = "single_photon_true"
+sim_only = true
+add_systematics = false
+mode = "true"
+cut = [
+    { name = "single_photon",              type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "no_electrons",                  type = "true",  parameters = [ "@electron_threshold" ]},
+    { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
+    { name = "no_neutral_pions",                        type = "mctruth"} ,
+    { name = "neutrino",                                type = "true"},
+]
+branch = [
+    #mctruth
+    { name = "cc",                             type = "mctruth" },
+    { name = "interaction_mode",               type = "mctruth" },
+    { name = "interaction_type",               type = "mctruth" },
+    { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },
+    { name = "nelectrons_srtruth",       type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nmuons_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "npi0s_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "npions_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "netas_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nprotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nphotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+
+    #interaction
+    { name = "interaction_id",                          type = "both"},
+    { name = "photon_multiplicity",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "electron_multiplicity",         type = "both", parameters = ["@electron_threshold"]},
+    { name = "pion_multiplicity",             type = "both", parameters = [ "@pion_threshold" ]},
+    { name = "proton_multiplicity",           type = "both", parameters = [ "@proton_threshold" ]},
+    { name = "muon_multiplicity",             type = "both", parameters = ["@muon_threshold"]},
+    { name = "neutrino",                                type = "true"},
+    { name = "is_dirt" ,                                type = "true"},
+    #positioning
+    { name = "vertex_x",                                type = "both"},    
+    { name = "vertex_y",                                type = "both"},
+    { name = "vertex_z",                                type = "both"},
+    { name = "dpT",                                     type = "both"},
+    { name = "dphiT",                                   type = "both"},
+    { name = "dpT_lp",                                  type = "both"},
+    { name = "dalphaT",                                 type = "both"},
+    { name = "dpL",                                     type = "both"},
+
+    #interaction (inclusive)
+    { name = "photon_multiplicity_inclusive",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "electron_multiplicity_inclusive",         type = "both", parameters = ["@electron_threshold"]},
+    { name = "pion_multiplicity_inclusive",             type = "both", parameters = [ "@pion_threshold" ]},
+    { name = "proton_multiplicity_inclusive",           type = "both", parameters = [ "@proton_threshold" ]},
+    { name = "muon_multiplicity_inclusive",             type = "both", parameters = ["@muon_threshold"]},
+    { name = "one_or_two_photon_observed_cut",              type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
+    { name = "no_charged_pions_inclusive",              type = "true",  parameters = [ "@pion_threshold" ]},
+    { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
+
+    
+    #leading shower
+    #energy
+    { name = "primary_classification", type="both_particle",    selector = "leading_gore"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_gore" },
+    { name = "p",                   type = "both_particle",     selector = "leading_gore"},
+    { name = "px",                  type = "both_particle",     selector = "leading_gore"},
+    { name = "py",                  type = "both_particle",     selector = "leading_gore"},
+    { name = "pz",                  type = "both_particle",     selector = "leading_gore"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "leading_gore"},
+    #positioning
+    { name = "start_x",             type = "both_particle",     selector = "leading_gore" },
+    { name = "start_y",             type = "both_particle",     selector = "leading_gore" },
+    { name = "start_z",             type = "both_particle",     selector = "leading_gore" },
+    { name = "end_x",               type = "both_particle",     selector = "leading_gore" },
+    { name = "end_y",               type = "both_particle",     selector = "leading_gore" },
+    { name = "end_z",               type = "both_particle",     selector = "leading_gore" },
+    { name = "start_dir_x",         type = "both_particle",     selector = "leading_gore" },
+    { name = "start_dir_y",         type = "both_particle",     selector = "leading_gore" },
+    { name = "start_dir_z",         type = "both_particle",     selector = "leading_gore" },
+    #shape
+    { name = "number_fragments",    type ="both_particle",      selector = "leading_gore"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "leading_gore"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "leading_gore"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "leading_gore"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "leading_gore"},
+    #identifiers
+    { name = "semantic_type",       type ="both_particle",      selector = "leading_gore"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "leading_gore"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "leading_gore"},
+    { name = "pid",                 type = "both_particle",     selector = "leading_gore"},
+
+
+    #leading proton / muon / charged pion
+    { name = "ke",                  type = "both_particle",     selector = "leading_proton"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_muon"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_pion"},
+]
+
+[[tree]]  #Reco: exactly one gOre (photon or electron)
+name = "reco_one_gore"
+sim_only = false
+add_systematics = false
+mode = "reco"
+cut = [
+    { name = "single_gore_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "no_muon_inclusive",                     type = "reco",  parameters = [ "@muon_threshold" ]},
+    { name = "contained_gore_fip_cut",                type = "reco",  parameters = [ "@containment_margin" ]},
+    { name = "valid_flashmatch",                      type = "reco"},
+]
+branch = [
+    #mctruth
+    { name = "cc",                             type = "mctruth" },
+    { name = "interaction_mode",               type = "mctruth" },
+    { name = "interaction_type",               type = "mctruth" },
+    { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },
+    { name = "nelectrons_srtruth",       type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nmuons_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "npi0s_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "npions_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "netas_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nprotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nphotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+
+    #interaction
+    { name = "interaction_id",                          type = "both"},
+    { name = "photon_multiplicity",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "electron_multiplicity",         type = "both", parameters = ["@electron_threshold"]},
+    { name = "pion_multiplicity",             type = "both", parameters = [ "@pion_threshold" ]},
+    { name = "proton_multiplicity",           type = "both", parameters = [ "@proton_threshold" ]},
+    { name = "muon_multiplicity",             type = "both", parameters = ["@muon_threshold"]},
+    { name = "neutrino",                                type = "true"},
+    { name = "is_dirt" ,                                type = "true"},
+    #positioning
+    { name = "vertex_x",                                type = "both"},    
+    { name = "vertex_y",                                type = "both"},
+    { name = "vertex_z",                                type = "both"},
+    { name = "dpT",                                     type = "both"},
+    { name = "dphiT",                                   type = "both"},
+    { name = "dpT_lp",                                  type = "both"},
+    { name = "dalphaT",                                 type = "both"},
+    { name = "dpL",                                     type = "both"},
+
+    #interaction (inclusive)
+    { name = "photon_multiplicity_inclusive",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "electron_multiplicity_inclusive",         type = "both", parameters = ["@electron_threshold"]},
+    { name = "pion_multiplicity_inclusive",             type = "both", parameters = [ "@pion_threshold" ]},
+    { name = "proton_multiplicity_inclusive",           type = "both", parameters = [ "@proton_threshold" ]},
+    { name = "muon_multiplicity_inclusive",             type = "both", parameters = ["@muon_threshold"]},
+    { name = "shower_multiplicity_inclusive",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "one_or_two_photon_observed_cut",              type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
+    { name = "no_charged_pions_inclusive",              type = "true",  parameters = [ "@pion_threshold" ]},
+    { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
+
+    
+    #leading gore
+    #energy
+    { name = "primary_classification", type="both_particle",    selector = "leading_gore"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_gore" },
+    { name = "p",                   type = "both_particle",     selector = "leading_gore"},
+    { name = "px",                  type = "both_particle",     selector = "leading_gore"},
+    { name = "py",                  type = "both_particle",     selector = "leading_gore"},
+    { name = "pz",                  type = "both_particle",     selector = "leading_gore"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "leading_gore"},
+    #positioning
+    { name = "start_x",             type = "both_particle",     selector = "leading_gore" },
+    { name = "start_y",             type = "both_particle",     selector = "leading_gore" },
+    { name = "start_z",             type = "both_particle",     selector = "leading_gore" },
+    { name = "end_x",               type = "both_particle",     selector = "leading_gore" },
+    { name = "end_y",               type = "both_particle",     selector = "leading_gore" },
+    { name = "end_z",               type = "both_particle",     selector = "leading_gore" },
+    { name = "start_dir_x",         type = "both_particle",     selector = "leading_gore" },
+    { name = "start_dir_y",         type = "both_particle",     selector = "leading_gore" },
+    { name = "start_dir_z",         type = "both_particle",     selector = "leading_gore" },
+    #shape
+    { name = "number_fragments",    type ="both_particle",      selector = "leading_gore"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "leading_gore"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "leading_gore"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "leading_gore"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "leading_gore"},
+    #identifiers
+    { name = "semantic_type",       type ="both_particle",      selector = "leading_gore"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "leading_gore"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "leading_gore"},
+    { name = "pid",                 type = "both_particle",     selector = "leading_gore"},
+
+
+    #leading proton / muon / charged pion
+    { name = "ke",                  type = "both_particle",     selector = "leading_proton"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_muon"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_pion"},
+]
+
+[[tree]]  #Reco: exactly one semantic shower
+name = "reco_one_shower"
+sim_only = false
+add_systematics = false
+mode = "reco"
+cut = [
+    { name = "single_shower_observed_cut",            type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "no_muon_inclusive",                     type = "reco",  parameters = [ "@muon_threshold" ]},
+    { name = "contained_gore_fip_cut",                type = "reco",  parameters = [ "@containment_margin" ]},
+    { name = "valid_flashmatch",                      type = "reco"},
+]
+branch = [
+    #mctruth
+    { name = "cc",                             type = "mctruth" },
+    { name = "interaction_mode",               type = "mctruth" },
+    { name = "interaction_type",               type = "mctruth" },
+    { name = "neutrino_energy",                type = "mctruth" },
+    { name = "neutrino_id",                    type = "true" },
+    { name = "nelectrons_srtruth",       type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nmuons_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "npi0s_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "npions_srtruth",           type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "netas_srtruth",            type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nprotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+    { name = "nphotons_srtruth",         type = "mctruth", parameters = [ "@mctruth_threshold" ]},
+
+    #interaction
+    { name = "interaction_id",                          type = "both"},
+    { name = "photon_multiplicity",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "electron_multiplicity",         type = "both", parameters = ["@electron_threshold"]},
+    { name = "pion_multiplicity",             type = "both", parameters = [ "@pion_threshold" ]},
+    { name = "proton_multiplicity",           type = "both", parameters = [ "@proton_threshold" ]},
+    { name = "muon_multiplicity",             type = "both", parameters = ["@muon_threshold"]},
+    { name = "neutrino",                                type = "true"},
+    { name = "is_dirt" ,                                type = "true"},
+    #positioning
+    { name = "vertex_x",                                type = "both"},    
+    { name = "vertex_y",                                type = "both"},
+    { name = "vertex_z",                                type = "both"},
+    { name = "dpT",                                     type = "both"},
+    { name = "dphiT",                                   type = "both"},
+    { name = "dpT_lp",                                  type = "both"},
+    { name = "dalphaT",                                 type = "both"},
+    { name = "dpL",                                     type = "both"},
+
+    #interaction (inclusive)
+    { name = "photon_multiplicity_inclusive",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "electron_multiplicity_inclusive",         type = "both", parameters = ["@electron_threshold"]},
+    { name = "pion_multiplicity_inclusive",             type = "both", parameters = [ "@pion_threshold" ]},
+    { name = "proton_multiplicity_inclusive",           type = "both", parameters = [ "@proton_threshold" ]},
+    { name = "muon_multiplicity_inclusive",             type = "both", parameters = ["@muon_threshold"]},
+    { name = "shower_multiplicity_inclusive",           type = "both", parameters = [ "@photon_threshold" ]},
+    { name = "one_or_two_photon_observed_cut",              type = "true",  parameters = [ "@photon_threshold"  ] },
+    { name = "no_electrons_inclusive",                  type = "true",  parameters = [ "@electron_threshold" ]},
+    { name = "no_charged_pions_inclusive",              type = "true",  parameters = [ "@pion_threshold" ]},
+    { name = "no_muon_inclusive",                       type = "true",  parameters = [ "@muon_threshold" ]},
+
+    
+    #leading shower
+    #energy
+    { name = "primary_classification", type="both_particle",    selector = "leading_shower"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_shower" },
+    { name = "p",                   type = "both_particle",     selector = "leading_shower"},
+    { name = "px",                  type = "both_particle",     selector = "leading_shower"},
+    { name = "py",                  type = "both_particle",     selector = "leading_shower"},
+    { name = "pz",                  type = "both_particle",     selector = "leading_shower"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "leading_shower"},
+    #positioning
+    { name = "start_x",             type = "both_particle",     selector = "leading_shower" },
+    { name = "start_y",             type = "both_particle",     selector = "leading_shower" },
+    { name = "start_z",             type = "both_particle",     selector = "leading_shower" },
+    { name = "end_x",               type = "both_particle",     selector = "leading_shower" },
+    { name = "end_y",               type = "both_particle",     selector = "leading_shower" },
+    { name = "end_z",               type = "both_particle",     selector = "leading_shower" },
+    { name = "start_dir_x",         type = "both_particle",     selector = "leading_shower" },
+    { name = "start_dir_y",         type = "both_particle",     selector = "leading_shower" },
+    { name = "start_dir_z",         type = "both_particle",     selector = "leading_shower" },
+    #shape
+    { name = "number_fragments",    type ="both_particle",      selector = "leading_shower"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "leading_shower"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "leading_shower"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "leading_shower"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "leading_shower"},
+    #identifiers
+    { name = "semantic_type",       type ="both_particle",      selector = "leading_shower"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "leading_shower"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "leading_shower"},
+    { name = "pid",                 type = "both_particle",     selector = "leading_shower"},
+
+
+    #leading proton / muon / charged pion
+    { name = "ke",                  type = "both_particle",     selector = "leading_proton"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_muon"},
+    { name = "ke",                  type = "both_particle",     selector = "leading_pion"},
+]

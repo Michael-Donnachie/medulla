@@ -46,7 +46,7 @@ name = "photon_single"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_shower_observed_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] } 
+    { name = "one_or_two_gore_observed_cut",             type = "reco",  parameters = [ "@photon_threshold"  ] } 
 ]
 branch = [
     { name = "interaction_id",                          type = "reco"},
@@ -58,7 +58,7 @@ name = "photon_nopart"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_shower_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_gore_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_charged_pions_inclusive",              type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "reco",  parameters = [ "@muon_threshold" ]}
 ]
@@ -73,10 +73,10 @@ name = "photon_contained"
 sim_only = false
 mode = "reco"
 cut = [
-    { name = "single_shower_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_gore_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_charged_pions_inclusive",              type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "reco",  parameters = [ "@muon_threshold" ]},
-    { name = "contained_shower_fip_cut",                type = "reco",  parameters = [ "@containment_margin" ]},
+    { name = "contained_gore_fip_cut",                type = "reco",  parameters = [ "@containment_margin" ]},
 ]
 branch = [
     { name = "interaction_id",                          type = "reco"},
@@ -90,10 +90,10 @@ sim_only = false
 add_systematics = false
 mode = "reco"
 cut = [
-    { name = "single_shower_observed_cut",                  type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_gore_observed_cut",                  type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_charged_pions_inclusive",                  type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                           type = "reco",  parameters = [ "@muon_threshold" ]},
-    { name = "contained_shower_fip_cut",                    type = "reco",  parameters = [ "@containment_margin" ]},
+    { name = "contained_gore_fip_cut",                    type = "reco",  parameters = [ "@containment_margin" ]},
     { name = "valid_flashmatch",                            type = "reco"}
 ]
 branch = [
@@ -114,40 +114,40 @@ branch = [
     { name = "vertex_x",                                type = "reco"},    
     { name = "vertex_y",                                type = "reco"},
     { name = "vertex_z",                                type = "reco"},
-    { name = "shower_opening_angle",                    type = "reco"},
+    { name = "gore_opening_angle",                    type = "reco"},
 
     #electron
     { name = "ke",                  type = "reco_particle",     selector = "leading_electron"},
 
     #leading shower
     #energy
-    { name = "ke",                  type = "reco_particle",     selector = "leading_shower" },
-    { name = "p",                   type = "reco_particle",     selector = "leading_shower"},
-    { name = "px",                  type = "reco_particle",     selector = "leading_shower"},
-    { name = "py",                  type = "reco_particle",     selector = "leading_shower"},
-    { name = "pz",                  type = "reco_particle",     selector = "leading_shower"},
-    { name = "start_dedx",          type = "reco_particle",     selector = "leading_shower"},
+    { name = "ke",                  type = "reco_particle",     selector = "leading_gore" },
+    { name = "p",                   type = "reco_particle",     selector = "leading_gore"},
+    { name = "px",                  type = "reco_particle",     selector = "leading_gore"},
+    { name = "py",                  type = "reco_particle",     selector = "leading_gore"},
+    { name = "pz",                  type = "reco_particle",     selector = "leading_gore"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "leading_gore"},
     #positioning
-    { name = "start_x",             type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_y",             type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_z",             type = "reco_particle",     selector = "leading_shower" },
-    { name = "end_x",               type = "reco_particle",     selector = "leading_shower" },
-    { name = "end_y",               type = "reco_particle",     selector = "leading_shower" },
-    { name = "end_z",               type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_dir_x",         type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_dir_y",         type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_dir_z",         type = "reco_particle",     selector = "leading_shower" },
+    { name = "start_x",             type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_y",             type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_z",             type = "reco_particle",     selector = "leading_gore" },
+    { name = "end_x",               type = "reco_particle",     selector = "leading_gore" },
+    { name = "end_y",               type = "reco_particle",     selector = "leading_gore" },
+    { name = "end_z",               type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_dir_x",         type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_dir_y",         type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_dir_z",         type = "reco_particle",     selector = "leading_gore" },
     #shape
-    { name = "number_fragments",    type ="reco_particle",      selector = "leading_shower"},
-    { name = "start_straightness",  type = "reco_particle",     selector = "leading_shower"},
-    { name = "axial_spread",        type = "reco_particle",     selector = "leading_shower"},
-    { name = "directional_spread",  type = "reco_particle",     selector = "leading_shower"},
-    { name = "vertex_distance",     type = "reco_particle",     selector = "leading_shower"},
+    { name = "number_fragments",    type ="reco_particle",      selector = "leading_gore"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "leading_gore"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "leading_gore"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "leading_gore"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "leading_gore"},
     #identifiers
-    { name = "semantic_type",       type ="reco_particle",      selector = "leading_shower"},
-    { name = "photon_softmax",      type = "reco_particle",     selector = "leading_shower"},
-    { name = "electron_softmax",    type = "reco_particle",     selector = "leading_shower"},
-    { name = "pid",                 type = "reco_particle",     selector = "leading_shower"},
+    { name = "semantic_type",       type ="reco_particle",      selector = "leading_gore"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "leading_gore"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "leading_gore"},
+    { name = "pid",                 type = "reco_particle",     selector = "leading_gore"},
     { name = "dpT",                                     type = "reco"},
     { name = "dphiT",                                   type = "reco"},
     { name = "dpT_lp",                                  type = "reco"},
@@ -156,33 +156,33 @@ branch = [
 
     #subleading shower
     #energy
-    { name = "ke",                  type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "p",                   type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "px",                  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "py",                  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "pz",                  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "start_dedx",          type = "reco_particle",     selector = "sub_leading_shower"},
+    { name = "ke",                  type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "p",                   type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "px",                  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "py",                  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "pz",                  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "sub_leading_gore"},
     #positioning
-    { name = "start_x",             type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_y",             type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_z",             type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "end_x",               type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "end_y",               type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "end_z",               type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_dir_x",         type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_dir_y",         type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_dir_z",         type = "reco_particle",     selector = "sub_leading_shower" },
+    { name = "start_x",             type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_y",             type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_z",             type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "end_x",               type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "end_y",               type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "end_z",               type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_dir_x",         type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_dir_y",         type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_dir_z",         type = "reco_particle",     selector = "sub_leading_gore" },
     #shape
-    { name = "number_fragments",    type ="reco_particle",      selector = "sub_leading_shower"},
-    { name = "start_straightness",  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "axial_spread",        type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "directional_spread",  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "vertex_distance",     type = "reco_particle",     selector = "sub_leading_shower"},
+    { name = "number_fragments",    type ="reco_particle",      selector = "sub_leading_gore"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "sub_leading_gore"},
     #identifiers
-    { name = "semantic_type",       type ="reco_particle",      selector = "sub_leading_shower"},
-    { name = "photon_softmax",      type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "electron_softmax",    type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "pid",                 type = "reco_particle",     selector = "sub_leading_shower"},
+    { name = "semantic_type",       type ="reco_particle",      selector = "sub_leading_gore"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "pid",                 type = "reco_particle",     selector = "sub_leading_gore"},
 ]
 
 [[tree]]  #reco single photon + no other particles (including e) + containment + netrino
@@ -191,7 +191,7 @@ sim_only = false
 add_systematics = false
 mode = "reco"
 cut = [
-    { name = "single_photon_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
+    { name = "one_or_two_photon_observed_cut",              type = "reco",  parameters = [ "@photon_threshold"  ] },
     { name = "no_electrons_inclusive",                  type = "reco",  parameters = [ "@electron_threshold"]},
     { name = "no_charged_pions_inclusive",              type = "reco",  parameters = [ "@pion_threshold" ]},
     { name = "no_muon_inclusive",                       type = "reco",  parameters = [ "@muon_threshold" ]},
@@ -214,7 +214,7 @@ branch = [
     { name = "vertex_x",                                type = "reco"},    
     { name = "vertex_y",                                type = "reco"},
     { name = "vertex_z",                                type = "reco"},
-    { name = "shower_opening_angle",                    type = "reco"},
+    { name = "gore_opening_angle",                    type = "reco"},
     { name = "dpT",                                     type = "reco"},
     { name = "dphiT",                                   type = "reco"},
     { name = "dpT_lp",                                  type = "reco"},
@@ -225,61 +225,61 @@ branch = [
 
     #leading shower
     #energy
-    { name = "ke",                  type = "reco_particle",     selector = "leading_shower" },
-    { name = "p",                   type = "reco_particle",     selector = "leading_shower"},
-    { name = "px",                  type = "reco_particle",     selector = "leading_shower"},
-    { name = "py",                  type = "reco_particle",     selector = "leading_shower"},
-    { name = "pz",                  type = "reco_particle",     selector = "leading_shower"},
-    { name = "start_dedx",          type = "reco_particle",     selector = "leading_shower"},
+    { name = "ke",                  type = "reco_particle",     selector = "leading_gore" },
+    { name = "p",                   type = "reco_particle",     selector = "leading_gore"},
+    { name = "px",                  type = "reco_particle",     selector = "leading_gore"},
+    { name = "py",                  type = "reco_particle",     selector = "leading_gore"},
+    { name = "pz",                  type = "reco_particle",     selector = "leading_gore"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "leading_gore"},
     #positioning
-    { name = "start_x",             type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_y",             type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_z",             type = "reco_particle",     selector = "leading_shower" },
-    { name = "end_x",               type = "reco_particle",     selector = "leading_shower" },
-    { name = "end_y",               type = "reco_particle",     selector = "leading_shower" },
-    { name = "end_z",               type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_dir_x",         type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_dir_y",         type = "reco_particle",     selector = "leading_shower" },
-    { name = "start_dir_z",         type = "reco_particle",     selector = "leading_shower" },
+    { name = "start_x",             type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_y",             type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_z",             type = "reco_particle",     selector = "leading_gore" },
+    { name = "end_x",               type = "reco_particle",     selector = "leading_gore" },
+    { name = "end_y",               type = "reco_particle",     selector = "leading_gore" },
+    { name = "end_z",               type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_dir_x",         type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_dir_y",         type = "reco_particle",     selector = "leading_gore" },
+    { name = "start_dir_z",         type = "reco_particle",     selector = "leading_gore" },
     #shape
-    { name = "number_fragments",    type ="reco_particle",      selector = "leading_shower"},
-    { name = "start_straightness",  type = "reco_particle",     selector = "leading_shower"},
-    { name = "axial_spread",        type = "reco_particle",     selector = "leading_shower"},
-    { name = "directional_spread",  type = "reco_particle",     selector = "leading_shower"},
-    { name = "vertex_distance",     type = "reco_particle",     selector = "leading_shower"},
+    { name = "number_fragments",    type ="reco_particle",      selector = "leading_gore"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "leading_gore"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "leading_gore"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "leading_gore"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "leading_gore"},
     #identifiers
-    { name = "semantic_type",       type ="reco_particle",      selector = "leading_shower"},
-    { name = "photon_softmax",      type = "reco_particle",     selector = "leading_shower"},
-    { name = "electron_softmax",    type = "reco_particle",     selector = "leading_shower"},
-    { name = "pid",                 type = "reco_particle",     selector = "leading_shower"},
+    { name = "semantic_type",       type ="reco_particle",      selector = "leading_gore"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "leading_gore"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "leading_gore"},
+    { name = "pid",                 type = "reco_particle",     selector = "leading_gore"},
 
     #subleading shower
     #energy
-    { name = "ke",                  type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "p",                   type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "px",                  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "py",                  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "pz",                  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "start_dedx",          type = "reco_particle",     selector = "sub_leading_shower"},
+    { name = "ke",                  type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "p",                   type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "px",                  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "py",                  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "pz",                  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "start_dedx",          type = "reco_particle",     selector = "sub_leading_gore"},
     #positioning
-    { name = "start_x",             type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_y",             type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_z",             type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "end_x",               type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "end_y",               type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "end_z",               type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_dir_x",         type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_dir_y",         type = "reco_particle",     selector = "sub_leading_shower" },
-    { name = "start_dir_z",         type = "reco_particle",     selector = "sub_leading_shower" },
+    { name = "start_x",             type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_y",             type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_z",             type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "end_x",               type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "end_y",               type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "end_z",               type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_dir_x",         type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_dir_y",         type = "reco_particle",     selector = "sub_leading_gore" },
+    { name = "start_dir_z",         type = "reco_particle",     selector = "sub_leading_gore" },
     #shape
-    { name = "number_fragments",    type ="reco_particle",      selector = "sub_leading_shower"},
-    { name = "start_straightness",  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "axial_spread",        type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "directional_spread",  type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "vertex_distance",     type = "reco_particle",     selector = "sub_leading_shower"},
+    { name = "number_fragments",    type ="reco_particle",      selector = "sub_leading_gore"},
+    { name = "start_straightness",  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "axial_spread",        type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "directional_spread",  type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "vertex_distance",     type = "reco_particle",     selector = "sub_leading_gore"},
     #identifiers
-    { name = "semantic_type",       type ="reco_particle",      selector = "sub_leading_shower"},
-    { name = "photon_softmax",      type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "electron_softmax",    type = "reco_particle",     selector = "sub_leading_shower"},
-    { name = "pid",                 type = "reco_particle",     selector = "sub_leading_shower"},
+    { name = "semantic_type",       type ="reco_particle",      selector = "sub_leading_gore"},
+    { name = "photon_softmax",      type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "electron_softmax",    type = "reco_particle",     selector = "sub_leading_gore"},
+    { name = "pid",                 type = "reco_particle",     selector = "sub_leading_gore"},
 ]

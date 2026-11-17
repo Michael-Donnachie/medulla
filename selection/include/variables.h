@@ -128,35 +128,42 @@ namespace vars
     REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_fip_depot, contained_fip_depot);
 
     /**
-     * @brief Apply a fiducial volume cut on showers based on their first interaction
+     * @brief Apply a fiducial volume cut on gOres (photons or electrons) based on their first interaction
      * point (FIP) and deposit_sum threshold.
      * @details Classifies an interaction as contained or not based on whether
-     * the leading (and sub-leading, if present) shower's first interaction point
-     * lies within the TPC fiducial margin. Only showers with a deposit_sum
-     * at or above 20 MeV are subject to the containment check; showers below
+     * the leading (and sub-leading, if present) gOre's first interaction point
+     * lies within the TPC fiducial margin. Only gOres with a deposit_sum
+     * at or above 20 MeV are subject to the containment check; gOres below
      * this threshold are treated as contained regardless of their FIP. If no
-     * showers are found in the interaction, the interaction is also treated as
+     * gOres are found in the interaction, the interaction is also treated as
      * contained.
      *
-     * The containment check is delegated to @ref pcuts::fip_contained with a
-     * margin parameter of 1.0 cm.
+     * The containment check is delegated to @ref pcuts::fip_contained, which
+     * insets all six TPC faces by the margin given in @p params[0].
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to select on.
-     * @return true if the showers fip is within fiducial volume
+     * @param params a single-element vector whose entry is the inset margin
+     * (in cm). It must be given in the TOML, e.g.
+     * parameters = [ "@containment_margin" ]; any other number of entries
+     * throws std::invalid_argument. The {1.0} default only applies to direct
+     * C++ calls; the TOML framework always passes the TOML parameters.
+     * @return true if the gOres fip is within fiducial volume
      */
     template<class T>
-    bool contained_shower_fip_depot(const T & obj,std::vector<double> params={1.0,}){
-        size_t lead_shower_index = selectors::leading_depot_shower(obj);
-        size_t sub_lead_shower_index = selectors::sub_leading_depot_shower(obj);
+    bool contained_gore_fip_depot(const T & obj,std::vector<double> params={1.0,}){
+        if(params.size() != 1)
+            throw std::invalid_argument("contained_gore_fip_depot requires exactly one parameter: the inset margin (cm).");
+        size_t lead_gore_index = selectors::leading_depot_gore(obj);
+        size_t sub_lead_gore_index = selectors::sub_leading_depot_gore(obj);
 
-        if (lead_shower_index == kNoMatch){
+        if (lead_gore_index == kNoMatch){
             return true;
         }
 
-        else if (sub_lead_shower_index == kNoMatch) {
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            if (lead_shower.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1){
+        else if (sub_lead_gore_index == kNoMatch) {
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            if (lead_gore.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1){
                 return true;
                 }
                 else{
@@ -168,18 +175,18 @@ namespace vars
             }
         }
         else {
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            auto & sub_lead_shower(obj.particles[sub_lead_shower_index]);
-            if (lead_shower.depositions_sum>=20 && sub_lead_shower.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1 && pcuts::fip_contained(sub_lead_shower,params)==1){
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            auto & sub_lead_gore(obj.particles[sub_lead_gore_index]);
+            if (lead_gore.depositions_sum>=20 && sub_lead_gore.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1 && pcuts::fip_contained(sub_lead_gore,params)==1){
                     return true;
                 }
                 else{
                     return false;
                 }
             }
-            else if (lead_shower.depositions_sum>=20){
-                if (pcuts::fip_contained(lead_shower,params)==1){
+            else if (lead_gore.depositions_sum>=20){
+                if (pcuts::fip_contained(lead_gore,params)==1){
                 return true;
                 }
                 else{
@@ -191,7 +198,7 @@ namespace vars
             }
         }
     }
-    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_shower_fip_depot, contained_shower_fip_depot);
+    REGISTER_CUT_SCOPE(RegistrationScope::Both, contained_gore_fip_depot, contained_gore_fip_depot);
 
     /**
      * @brief Variable for the neutrino ID of the interaction.
@@ -870,7 +877,7 @@ namespace vars
      * their direction vector dot product. The opening angle is only computed if
      * both photons have a deposition sum at or above 20 MeV; otherwise
      * kNoMatchValue is returned. This variable is used in the collinear 
-     * two-photon topology cut in @ref cuts::single_photon_observed_cut.
+     * two-photon topology cut in @ref cuts::one_or_two_photon_observed_cut.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to apply the variable on.
      * @return the opening angle between the two photons in radians, or
@@ -901,38 +908,38 @@ namespace vars
 
     /**
      * @brief Variable for the opening angle between the leading and sub-leading
-     * shower.
+     * gOre (photon or electron).
      * @details Calculates the angle between the start directions of the leading
-     * and sub-leading showers (ranked by deposition sum) as the arccosine of
+     * and sub-leading gOres (ranked by deposition sum) as the arccosine of
      * their direction vector dot product. The opening angle is only computed if
-     * both showers have a deposition sum at or above 20 MeV; otherwise
+     * both gOres have a deposition sum at or above 20 MeV; otherwise
      * kNoMatchValue is returned. 
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to apply the variable on.
-     * @return the opening angle between the two showers in radians, or
-     * kNoMatchValue if either shower is missing or below the 20 MeV threshold.
+     * @return the opening angle between the two gOres in radians, or
+     * kNoMatchValue if either gOre is missing or below the 20 MeV threshold.
      */
     template<class T>
-    double shower_opening_angle(const T & obj)
+    double gore_opening_angle(const T & obj)
     {
-        size_t lead_shower_index = selectors::leading_depot_shower(obj);
-        size_t sub_lead_shower_index = selectors::sub_leading_depot_shower(obj);
+        size_t lead_gore_index = selectors::leading_depot_gore(obj);
+        size_t sub_lead_gore_index = selectors::sub_leading_depot_gore(obj);
         
-        if(lead_shower_index == kNoMatch || sub_lead_shower_index == kNoMatch)  
+        if(lead_gore_index == kNoMatch || sub_lead_gore_index == kNoMatch)  
             return kNoMatchValue; 
         else
         {
-            auto & lead_shower(obj.particles[lead_shower_index]);
-            auto & sub_lead_shower(obj.particles[sub_lead_shower_index]);
-            if (lead_shower.depositions_sum >=20 && sub_lead_shower.depositions_sum>=20){
-                return std::acos(lead_shower.start_dir[0] * sub_lead_shower.start_dir[0] + lead_shower.start_dir[1] * sub_lead_shower.start_dir[1] + lead_shower.start_dir[2] * sub_lead_shower.start_dir[2]);
+            auto & lead_gore(obj.particles[lead_gore_index]);
+            auto & sub_lead_gore(obj.particles[sub_lead_gore_index]);
+            if (lead_gore.depositions_sum >=20 && sub_lead_gore.depositions_sum>=20){
+                return std::acos(lead_gore.start_dir[0] * sub_lead_gore.start_dir[0] + lead_gore.start_dir[1] * sub_lead_gore.start_dir[1] + lead_gore.start_dir[2] * sub_lead_gore.start_dir[2]);
             }
             else{
                 return kNoMatchValue;
             }
         }
     }
-    REGISTER_VAR_SCOPE(RegistrationScope::Both, shower_opening_angle, shower_opening_angle);
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, gore_opening_angle, gore_opening_angle);
 
     /**
      * @brief Variable for the 3D distance between the start points of the
@@ -1049,6 +1056,33 @@ namespace vars
         return count;
     }
     REGISTER_VAR_SCOPE(RegistrationScope::Both, photon_multiplicity_inclusive, photon_multiplicity_inclusive);
+
+    /**
+     * @brief Variable for the inclusive semantic shower multiplicity of the
+     * interaction, thresholded by kinetic energy.
+     * @details Counts all particles in the interaction (primary or otherwise)
+     * whose semantic type is 0 (shower) and whose kinetic energy is at or
+     * above @p params[0]. The PID is not used. This is the variable that
+     * @ref cuts::single_shower_observed_cut requires to equal one.
+     * @tparam T the type of interaction (true or reco).
+     * @param obj the interaction to apply the variable on.
+     * @param params a single-element vector whose entry is the minimum kinetic
+     * energy threshold (in MeV). Defaults to 25.0 MeV.
+     * @return the number of semantic showers above the kinetic energy
+     * threshold, regardless of primary classification.
+     */
+    template<class T>
+    double shower_multiplicity_inclusive(const T & obj, std::vector<double> params={25.0,})
+    {
+        size_t count(0);
+        for(const auto & p : obj.particles)
+        {
+            if(pvars::semantic_type(p) == 0 && pvars::ke(p) >= params[0])
+                ++count;
+        }
+        return count;
+    }
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, shower_multiplicity_inclusive, shower_multiplicity_inclusive);
 
     /**
      * @brief Variable for the (primary) electron multiplicity of the
@@ -1295,23 +1329,23 @@ namespace vars
     REGISTER_VAR_SCOPE(RegistrationScope::Both, proton_multiplicity_inclusive_low, proton_multiplicity_inclusive_low);
 
     /**
-     * @brief Variable for the non-primary shower multiplicity of the
+     * @brief Variable for the non-primary gOre (photon or electron) multiplicity of the
      * interaction.
      * @details This function calculates the multiplicity of non-primary
-     * showers in the interaction by counting the number of non-primary particles
+     * gOres in the interaction by counting the number of non-primary particles
      * that are identified as photons or electrons and have a kinetic energy above a
      * threshold. The threshold is set by the `params` vector, which defaults
-     * to 25 MeV. The function returns the number of non-primary showers in the
+     * to 25 MeV. The function returns the number of non-primary gOres in the
      * interaction.
      * @tparam T the type of interaction (true or reco).
      * @param obj the interaction to apply the variable on.
      * @param params the parameters for the cut. In this case, this sets the
-     * kinetic energy threshold for a shower to count towards the
+     * kinetic energy threshold for a gOre to count towards the
      * multiplicity. Defaults to 25 MeV.
-     * @return the multiplicity of non-primary showers in the interaction.
+     * @return the multiplicity of non-primary gOres in the interaction.
      */
     template<class T>
-    double nonprimary_shower_multiplicity(const T & obj, std::vector<double> params={25.0,})
+    double nonprimary_gore_multiplicity(const T & obj, std::vector<double> params={25.0,})
     {
         size_t count(0);
         for(const auto & p : obj.particles)
@@ -1321,7 +1355,7 @@ namespace vars
         }
         return count;
     }
-    REGISTER_VAR_SCOPE(RegistrationScope::Both, nonprimary_shower_multiplicity, nonprimary_shower_multiplicity);
+    REGISTER_VAR_SCOPE(RegistrationScope::Both, nonprimary_gore_multiplicity, nonprimary_gore_multiplicity);
 
     /**
      * @brief Variable for the (primary) muon multiplicity of the
